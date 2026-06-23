@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CBT Mock Test - Admin Dashboard</title>
+  <meta name="description" content="Real-time administration dashboard for monitoring CBT mock test sessions.">
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* CSS Variables & Reset */
+    :root {
+      --bg-dark: #070913;
+      --bg-surface: rgba(15, 23, 42, 0.6);
+      --bg-card: rgba(30, 41, 59, 0.45);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.4);
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      
+      --color-unvisited: #475569;
+      --color-answered: #10b981;
+      --color-unanswered: #ef4444;
+      --color-review: #f59e0b;
+      --color-review-answered: #8b5cf6;
+      
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Container Grid */
+    .app-container {
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      flex: 1;
+    }
+
+    /* Header Bar */
+    header {
+      background: var(--bg-surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-logo {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+      box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+    }
+
+    .brand-title h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-title p {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.65rem 1.25rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+
+    /* Stats Banner */
+    .stats-banner {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+    }
+
+    .stat-card {
+      background: var(--bg-surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stat-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      color: var(--accent);
+    }
+
+    .stat-icon.green { color: var(--color-answered); }
+    .stat-icon.orange { color: var(--color-review); }
+    .stat-icon.blue { color: #3b82f6; }
+
+    /* Dashboard Layout Split */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 1.5rem;
+      flex: 1;
+    }
+
+    /* Live Feed Column */
+    .feed-panel {
+      background: var(--bg-surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 230px);
+      min-height: 500px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .panel-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .live-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f43f5e;
+      box-shadow: 0 0 8px #f43f5e;
+      animation: pulse-red 1.5s infinite;
+    }
+
+    @keyframes pulse-red {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(244, 63, 94, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+    }
+
+    .feed-content {
+      padding: 1rem;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .feed-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      transition: all var(--transition-fast);
+      animation: slide-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .feed-item-header {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+    }
+
+    .feed-timestamp {
+      font-family: monospace;
+    }
+
+    .feed-item-body {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .feed-item.highlight {
+      border-color: rgba(99, 102, 241, 0.4);
+      background: rgba(99, 102, 241, 0.08);
+      animation: flash-indigo 1.5s ease-out;
+    }
+
+    .feed-item.submit-highlight {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.08);
+      animation: flash-green 1.5s ease-out;
+    }
+
+    @keyframes slide-in {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes flash-indigo {
+      0% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.3); background: rgba(99, 102, 241, 0.2); }
+      100% { box-shadow: 0 0 0 rgba(99, 102, 241, 0); background: rgba(99, 102, 241, 0.08); }
+    }
+
+    @keyframes flash-green {
+      0% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.2); }
+      100% { box-shadow: 0 0 0 rgba(16, 185, 129, 0); background: rgba(16, 185, 129, 0.08); }
+    }
+
+    /* Student Progress Cards Grid */
+    .students-container {
+      background: var(--bg-surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      overflow-y: auto;
+      height: calc(100vh - 230px);
+      min-height: 500px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .students-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    .student-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: all var(--transition-fast);
+    }
+
+    .student-card:hover {
+      border-color: var(--border-focus);
+      transform: translateY(-2px);
+    }
+
+    .student-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+
+    .student-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .student-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .student-id {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .student-location {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .student-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .student-badge.active {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+
+    .student-badge.submitted {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--color-answered);
+    }
+
+    .student-badge.disconnected {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--color-unanswered);
+    }
+
+    /* Student Answer mini grid */
+    .mini-palette {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.4rem;
+    }
+
+    .mini-btn {
+      aspect-ratio: 1;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-family: monospace;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .mini-btn span.q-num {
+      font-size: 0.55rem;
+      font-weight: 400;
+      opacity: 0.5;
+      margin-bottom: 1px;
+    }
+
+    .mini-btn.unvisited {
+      background: #334155;
+      border-color: #475569;
+      color: var(--text-secondary);
+    }
+
+    .mini-btn.unanswered {
+      background: var(--color-unanswered);
+      border-color: var(--color-unanswered);
+      color: #fff;
+    }
+
+    .mini-btn.answered {
+      background: var(--color-answered);
+      border-color: var(--color-answered);
+      color: #fff;
+    }
+
+    .mini-btn.marked {
+      background: var(--color-review);
+      border-color: var(--color-review);
+      color: #fff;
+    }
+
+    .mini-btn.marked-answered {
+      background: var(--color-review-answered);
+      border-color: var(--color-review-answered);
+      color: #fff;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+      padding-top: 0.75rem;
+    }
+
+    .card-footer .score {
+      font-weight: 600;
+      color: var(--color-answered);
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      text-align: center;
+      color: var(--text-secondary);
+      gap: 1rem;
+      border: 1px dashed var(--border-color);
+      border-radius: 12px;
+      grid-column: 1 / -1;
+    }
+
+    .empty-state i {
+      font-size: 2.5rem;
+      color: var(--text-muted);
+    }
+
+    .connection-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444; /* red by default */
+    }
+
+    .status-dot.online {
+      background: var(--color-answered);
+      box-shadow: 0 0 8px var(--color-answered);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .feed-panel {
+        height: 300px;
+        min-height: 250px;
+      }
+      .students-container {
+        height: auto;
+        min-height: 400px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .stats-banner {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-banner {
+        grid-template-columns: 1fr;
+      }
+      header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+      .header-actions {
+        width: 100%;
+      }
+      .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header>
+      <div class="brand-section">
+        <div class="brand-logo">
+          <i class="fa-solid fa-gauge-high"></i>
+        </div>
+        <div class="brand-title">
+          <h1>CBT Admin Dashboard</h1>
+          <p>Mock Test Live Session Monitor</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <div class="connection-status" style="margin-right: 1rem;">
+          <div class="status-dot" id="db-status-dot"></div>
+          <span id="db-status-text" style="color:var(--text-secondary)">Connecting...</span>
+        </div>
+        
+        <button class="btn btn-danger" id="btn-clear-session">
+          <i class="fa-solid fa-trash-can"></i> Clear All Data
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats Banner -->
+    <div class="stats-banner">
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Active Candidates</div>
+          <div class="stat-value" id="stat-active-count">0</div>
+        </div>
+        <div class="stat-icon blue">
+          <i class="fa-solid fa-users"></i>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Submitted Tests</div>
+          <div class="stat-value" id="stat-submitted-count">0</div>
+        </div>
+        <div class="stat-icon green">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Total Answers Saved</div>
+          <div class="stat-value" id="stat-answers-count">0</div>
+        </div>
+        <div class="stat-icon orange">
+          <i class="fa-solid fa-database"></i>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <div class="stat-label">Average Completion</div>
+          <div class="stat-value" id="stat-avg-completion">0%</div>
+        </div>
+        <div class="stat-icon">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid Dashboard Content -->
+    <div class="dashboard-grid">
+      
+      <!-- Left Column: Real-Time Feed -->
+      <section class="feed-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="live-pulse"></span>
+            <span>Live Activity Feed</span>
+          </div>
+          <div style="font-size:0.75rem; color:var(--text-muted);" id="feed-status">Listening...</div>
+        </div>
+        
+        <div class="feed-content" id="feed-container">
+          <!-- Feed items will populate here -->
+          <div class="empty-state" style="padding:2rem 1rem; border:none;" id="feed-empty">
+            <i class="fa-solid fa-list-check"></i>
+            <p style="font-size:0.85rem;">Waiting for candidate responses...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Student Grid Cards -->
+      <section class="students-container">
+        <div class="panel-header" style="padding:0 0 1rem 0; border-bottom:1px solid var(--border-color);">
+          <div class="panel-title">
+            <i class="fa-solid fa-user-graduate" style="color:var(--accent)"></i>
+            <span>Candidate Progress Grids</span>
+          </div>
+        </div>
+
+        <div class="students-grid" id="students-grid-container">
+          <!-- Dynamically populated candidate cards -->
+          <div class="empty-state" id="students-empty">
+            <i class="fa-solid fa-user-slash"></i>
+            <p>No active candidate sessions found.</p>
+            <p style="font-size:0.8rem; color:var(--text-muted);">Share the index.html URL with students to start receiving responses.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+  <!-- Firebase Script Integration -->
+  <script type="module">
+    import { db } from "./firebase-config.js";
+    import { collection, onSnapshot, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Application State
+    const sessionData = {
+      students: {}, // studentId -> { metadata, answers: { qIdx -> { selectedOption, status, timestamp } } }
+      totalAnswersCount: 0
+    };
+
+    // Flag to identify initial loading sync batch vs real-time edits
+    let isInitialLoad = true;
+
+    // DOM Elements
+    const dbStatusDot = document.getElementById("db-status-dot");
+    const dbStatusText = document.getElementById("db-status-text");
+    const feedContainer = document.getElementById("feed-container");
+    const feedEmpty = document.getElementById("feed-empty");
+    const studentsGridContainer = document.getElementById("students-grid-container");
+    const studentsEmpty = document.getElementById("students-empty");
+    const btnClearSession = document.getElementById("btn-clear-session");
+
+    // Stats Elements
+    const statActiveCount = document.getElementById("stat-active-count");
+    const statSubmittedCount = document.getElementById("stat-submitted-count");
+    const statAnswersCount = document.getElementById("stat-answers-count");
+    const statAvgCompletion = document.getElementById("stat-avg-completion");
+
+    // Check Firebase Reference
+    if (db) {
+      dbStatusDot.classList.add("online");
+      dbStatusText.textContent = "Live Link Active";
+      initializeRealtimeListener();
+    } else {
+      dbStatusDot.classList.remove("online");
+      dbStatusText.textContent = "Pending Config";
+    }
+
+    // Initialize Firestore real-time collection observer
+    function initializeRealtimeListener() {
+      try {
+        const unsubscribe = onSnapshot(collection(db, "student_responses"), (snapshot) => {
+          
+          snapshot.docChanges().forEach((change) => {
+            const docId = change.doc.id;
+            const data = change.doc.data();
+            const changeType = change.type;
+
+            if (docId.endsWith("_metadata")) {
+              // Handle Student Session Metadata document
+              const sId = data.studentId;
+              
+              if (changeType === "removed") {
+                if (sessionData.students[sId]) {
+                  delete sessionData.students[sId];
+                }
+              } else {
+                // added or modified
+                if (!sessionData.students[sId]) {
+                  sessionData.students[sId] = { metadata: data, answers: {} };
+                } else {
+                  sessionData.students[sId].metadata = data;
+                }
+                
+                // Real-time flash notification for updates
+                if (!isInitialLoad) {
+                  logActivity(data, "metadata", changeType);
+                }
+              }
+
+            } else if (docId.includes("_q")) {
+              // Handle Question Answer response document
+              const sId = data.studentId;
+              const qIdx = data.questionIndex;
+
+              if (changeType === "removed") {
+                if (sessionData.students[sId] && sessionData.students[sId].answers[qIdx]) {
+                  delete sessionData.students[sId].answers[qIdx];
+                }
+              } else {
+                // added or modified
+                // Ensure student container exists (fallback if answers arrive before metadata)
+                if (!sessionData.students[sId]) {
+                  sessionData.students[sId] = { 
+                    metadata: { studentId: sId, studentName: data.studentName || "Guest", location: data.location || "Unknown", status: "active" }, 
+                    answers: {} 
+                  };
+                }
+                
+                const oldAnswer = sessionData.students[sId].answers[qIdx];
+                sessionData.students[sId].answers[qIdx] = data;
+
+                // Log response update
+                if (!isInitialLoad) {
+                  // Only log if it represents an actual new action (not a duplicate event trigger)
+                  if (!oldAnswer || oldAnswer.selectedOption !== data.selectedOption || oldAnswer.status !== data.status) {
+                    logActivity(data, "answer", changeType);
+                  }
+                }
+              }
+            }
+          });
+
+          // After processing docChanges in this batch, rebuild dashboard representation
+          updateStatsAndDashboard();
+          
+          // Flip initial load flag to false after processing the first full snapshot
+          isInitialLoad = false;
+        }, (err) => {
+          console.error("Firestore Listener error: ", err);
+          document.getElementById("feed-status").textContent = "Error: " + err.message;
+        });
+      } catch (err) {
+        console.error("Error setting up real-time listener: ", err);
+      }
+    }
+
+    // Log Activity Feed Entry
+    function logActivity(data, type, changeType) {
+      if (feedEmpty) feedEmpty.style.display = "none";
+      
+      const item = document.createElement("div");
+      item.className = "feed-item";
+      
+      const timeStr = new Date().toLocaleTimeString();
+      
+      if (type === "metadata") {
+        if (data.status === "submitted") {
+          item.classList.add("submit-highlight");
+          item.innerHTML = `
+            <div class="feed-item-header">
+              <span class="feed-timestamp">${timeStr}</span>
+              <span style="color:var(--color-answered); font-weight:700">SUBMITTED</span>
+            </div>
+            <div class="feed-item-body">
+              🎓 <strong>${data.studentName}</strong> (${data.location}) has submitted their exam paper! (Score: ${data.scorePreview !== undefined ? data.scorePreview : 'Pending'})
+            </div>
+          `;
+        } else {
+          item.classList.add("highlight");
+          item.innerHTML = `
+            <div class="feed-item-header">
+              <span class="feed-timestamp">${timeStr}</span>
+              <span style="color:var(--accent)">NEW SESSION</span>
+            </div>
+            <div class="feed-item-body">
+              ⚡ <strong>${data.studentName}</strong> (${data.location}) entered the mock test room.
+            </div>
+          `;
+        }
+      } else if (type === "answer") {
+        item.classList.add("highlight");
+        const qNum = data.questionIndex + 1;
+        const option = data.selectedOption;
+        
+        if (option === null || option === undefined) {
+          item.innerHTML = `
+            <div class="feed-item-header">
+              <span class="feed-timestamp">${timeStr}</span>
+              <span style="color:var(--color-unanswered)">CLEARED</span>
+            </div>
+            <div class="feed-item-body">
+              ↩️ <strong>${data.studentName}</strong> cleared choice for <strong>Question ${qNum}</strong>.
+            </div>
+          `;
+        } else {
+          let actionLabel = "selected";
+          let actionColor = "var(--color-answered)";
+          if (data.status.startsWith("marked")) {
+            actionLabel = "flagged review";
+            actionColor = "var(--color-review)";
+          }
+          
+          item.innerHTML = `
+            <div class="feed-item-header">
+              <span class="feed-timestamp">${timeStr}</span>
+              <span style="color:${actionColor}">OPTION CLICK</span>
+            </div>
+            <div class="feed-item-body">
+              ✏️ <strong>${data.studentName}</strong> ${actionLabel} <strong>Option ${option}</strong> for <strong>Question ${qNum}</strong>.
+            </div>
+          `;
+        }
+      }
+
+      // Add to top of feed
+      feedContainer.insertBefore(item, feedContainer.firstChild);
+
+      // Limit feed length to recent 50 entries
+      while (feedContainer.children.length > 50) {
+        feedContainer.removeChild(feedContainer.lastChild);
+      }
+    }
+
+    // Refresh dashboard stats and grid cards
+    function updateStatsAndDashboard() {
+      const studentIds = Object.keys(sessionData.students);
+      
+      if (studentIds.length === 0) {
+        studentsEmpty.style.display = "flex";
+        studentsGridContainer.innerHTML = "";
+        statActiveCount.textContent = "0";
+        statSubmittedCount.textContent = "0";
+        statAnswersCount.textContent = "0";
+        statAvgCompletion.textContent = "0%";
+        return;
+      }
+      
+      studentsEmpty.style.display = "none";
+      studentsGridContainer.innerHTML = "";
+      
+      let activeCount = 0;
+      let submittedCount = 0;
+      let totalAnswers = 0;
+      let totalQuestionsTarget = studentIds.length * 10; // 10 questions per candidate
+      
+      studentIds.forEach((sId) => {
+        const student = sessionData.students[sId];
+        const meta = student.metadata;
+        const answers = student.answers;
+
+        if (meta.status === "submitted") {
+          submittedCount++;
+        } else {
+          activeCount++;
+        }
+
+        // Count non-empty answers
+        let answeredCount = 0;
+        Object.keys(answers).forEach((qKey) => {
+          const ans = answers[qKey];
+          if (ans.selectedOption !== null && ans.selectedOption !== undefined) {
+            answeredCount++;
+            totalAnswers++;
+          }
+        });
+
+        // Create student card UI
+        const card = document.createElement("div");
+        card.className = "student-card";
+        
+        let badgeClass = "active";
+        let badgeLabel = "Active Test";
+        if (meta.status === "submitted") {
+          badgeClass = "submitted";
+          badgeLabel = "Submitted";
+        }
+        
+        // Build mini progress grid
+        let miniGridHtml = "";
+        for (let i = 0; i < 10; i++) {
+          const ans = answers[i];
+          let qClass = "unvisited";
+          let letterDisp = "-";
+
+          if (ans) {
+            qClass = ans.status || "unvisited";
+            letterDisp = ans.selectedOption || "-";
+          }
+
+          miniGridHtml += `
+            <div class="mini-btn ${qClass}" title="Q${i+1}: Status ${qClass}">
+              <span class="q-num">Q${i+1}</span>
+              ${letterDisp}
+            </div>
+          `;
+        }
+
+        const scoreText = (meta.status === "submitted" && meta.scorePreview !== undefined) 
+          ? `Score: <span class="score">${meta.scorePreview} pts</span>` 
+          : `<span style="color:var(--text-muted)">Testing...</span>`;
+
+        card.innerHTML = `
+          <div class="student-card-header">
+            <div class="student-details">
+              <span class="student-name">${meta.studentName}</span>
+              <span class="student-id">ID: ${meta.studentId}</span>
+              <span class="student-location"><i class="fa-solid fa-location-dot"></i> ${meta.location}</span>
+            </div>
+            <span class="student-badge ${badgeClass}">${badgeLabel}</span>
+          </div>
+          
+          <div class="mini-palette">
+            ${miniGridHtml}
+          </div>
+
+          <div class="card-footer">
+            <span>Answered: <strong>${answeredCount} / 10</strong></span>
+            <span>${scoreText}</span>
+          </div>
+        `;
+
+        studentsGridContainer.appendChild(card);
+      });
+
+      // Update counters
+      statActiveCount.textContent = activeCount;
+      statSubmittedCount.textContent = submittedCount;
+      statAnswersCount.textContent = totalAnswers;
+
+      // Completion % logic
+      if (totalQuestionsTarget > 0) {
+        const compPercent = Math.round((totalAnswers / totalQuestionsTarget) * 100);
+        statAvgCompletion.textContent = `${compPercent}%`;
+      } else {
+        statAvgCompletion.textContent = "0%";
+      }
+    }
+
+    // Reset Data Session Button
+    btnClearSession.addEventListener("click", async () => {
+      if (confirm("🚨 WARNING: Are you sure you want to delete ALL student responses and active sessions? This cannot be undone.")) {
+        btnClearSession.disabled = true;
+        btnClearSession.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Clearing Database...`;
+        
+        try {
+          const querySnapshot = await getDocs(collection(db, "student_responses"));
+          
+          if (querySnapshot.empty) {
+            alert("No records to clear.");
+            resetClearBtn();
+            return;
+          }
+          
+          const batch = writeBatch(db);
+          querySnapshot.forEach((docSnap) => {
+            batch.delete(docSnap.ref);
+          });
+          
+          await batch.commit();
+          
+          // Clear local UI components
+          sessionData.students = {};
+          sessionData.totalAnswersCount = 0;
+          feedContainer.innerHTML = `
+            <div class="empty-state" style="padding:2rem 1rem; border:none;" id="feed-empty">
+              <i class="fa-solid fa-list-check"></i>
+              <p style="font-size:0.85rem;">Session reset. Waiting for new submissions...</p>
+            </div>
+          `;
+          updateStatsAndDashboard();
+          alert("Firestore collection cleared successfully!");
+        } catch (err) {
+          console.error("Firestore Delete Collection Error: ", err);
+          alert("Error clearing collection: " + err.message);
+        } finally {
+          resetClearBtn();
+        }
+      }
+    });
+
+    function resetClearBtn() {
+      btnClearSession.disabled = false;
+      btnClearSession.innerHTML = `<i class="fa-solid fa-trash-can"></i> Clear All Data`;
+    }
+  </script>
+</body>
+</html>
