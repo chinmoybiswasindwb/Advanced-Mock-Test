@@ -878,11 +878,11 @@
           <div class="instruction-card">
             <p><strong>Instructions:</strong></p>
             <p>1. Double check your selected option before clicking "Save & Next".</p>
-            <p>2. Responses are saved instantly to Firestore.</p>
+            <p>2. Time spent per question is tracked automatically in the background.</p>
             <p>3. Keep track of the countdown timer on the top panel.</p>
             <div class="connection-status">
-              <div class="status-dot" id="db-status-dot"></div>
-              <span id="db-status-text">Connecting to Firebase...</span>
+              <div class="status-dot online" id="db-status-dot"></div>
+              <span id="db-status-text">Local Tracking Active</span>
             </div>
           </div>
         </div>
@@ -964,12 +964,12 @@
   <div class="overlay" id="completed-overlay">
     <div class="login-modal submit-modal" style="max-width: 500px;">
       <div style="background: rgba(16, 185, 129, 0.1); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
-        <i class="fa-solid fa-award" style="color: var(--color-answered); font-size: 2.5rem; margin-bottom: 0;"></i>
+        <i class="fa-solid fa-circle-check" style="color: var(--color-answered); font-size: 2.5rem; margin-bottom: 0;"></i>
       </div>
-      <h2>Test Submitted Successfully!</h2>
-      <p>Thank you for taking the Class 10 Mock Test. Your responses have been securely saved to the Cloud Database.</p>
+      <h2>Test Complete!</h2>
+      <p style="margin-bottom: 1rem; font-size: 0.95rem; color: var(--text-secondary);">Please download/copy your exam token and send it to your teacher.</p>
       
-      <div style="background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-color); text-align: left; margin-bottom: 1.5rem;">
+      <div style="background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-color); text-align: left; margin-bottom: 1.25rem;">
         <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.9rem;">
           <span style="color:var(--text-secondary)">Candidate Name:</span>
           <span id="final-name" style="font-weight:600"> - </span>
@@ -979,22 +979,32 @@
           <span id="final-id" style="font-weight:600"> - </span>
         </div>
         <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
-          <span style="color:var(--text-secondary)">Total Questions Answered:</span>
+          <span style="color:var(--text-secondary)">Total Answered:</span>
           <span id="final-answered" style="color:var(--color-answered); font-weight:600"> 0 / 12</span>
         </div>
       </div>
 
-      <button class="btn btn-secondary btn-block" onclick="window.location.reload();">
+      <!-- Token container -->
+      <div style="margin-bottom: 1.25rem;">
+        <textarea id="exam-token-box" class="form-input" style="width: 100%; height: 80px; font-family: monospace; font-size: 0.8rem; resize: none; word-break: break-all; margin-bottom: 0.75rem; background: rgba(0,0,0,0.25);" readonly></textarea>
+        <div style="display: flex; gap: 0.75rem;">
+          <button class="btn btn-secondary" id="btn-copy-token" style="flex: 1; justify-content: center; font-size: 0.85rem;">
+            <i class="fa-regular fa-clipboard"></i> Copy Token
+          </button>
+          <button class="btn btn-primary" id="btn-download-token" style="flex: 1; justify-content: center; font-size: 0.85rem; background: var(--color-answered); border-color: var(--color-answered);">
+            <i class="fa-solid fa-download"></i> Download .cbt
+          </button>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary btn-block" onclick="window.location.reload();" style="font-size: 0.85rem; padding: 0.5rem;">
         <i class="fa-solid fa-rotate-right"></i> Restart Test Session
       </button>
     </div>
   </div>
 
-  <!-- Firebase Integration Script -->
-  <script type="module">
-    import { db } from "./firebase-config.js";
-    import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+  <!-- Offline Exam and Local Token Compilation Script -->
+  <script>
     const classId = "class10";
 
     // Class 10 mock test questions
@@ -1142,6 +1152,9 @@
       studentAnswers[i] = { selectedOption: null, status: "unvisited" };
     }
 
+    let questionTimes = new Array(questions.length).fill(0);
+    let questionStartTime = null;
+
     let timeLeft = 20 * 60; 
     let timerInterval = null;
 
@@ -1167,22 +1180,17 @@
     const btnConfirmSubmit = document.getElementById("btn-confirm-submit");
     
     const completedOverlay = document.getElementById("completed-overlay");
-    
-    const dbStatusDot = document.getElementById("db-status-dot");
-    const dbStatusText = document.getElementById("db-status-text");
 
-    function checkFirebaseConnection() {
-      if (db) {
-        dbStatusDot.classList.add("online");
-        dbStatusText.textContent = "Connected to Firebase Firestore";
-      } else {
-        dbStatusDot.classList.remove("online");
-        dbStatusText.textContent = "Firebase Configuration Pending";
+    function trackTimeOnCurrentQuestion() {
+      if (questionStartTime === null) return;
+      const elapsed = Math.floor((Date.now() - questionStartTime) / 1000);
+      if (elapsed > 0) {
+        questionTimes[currentIdx] += elapsed;
       }
+      questionStartTime = Date.now();
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      checkFirebaseConnection();
       renderPaletteGrid();
       sessionStorage.clear();
     });
@@ -1200,9 +1208,9 @@
       loginOverlay.classList.remove("active");
 
       studentAnswers[0].status = "unanswered";
+      questionStartTime = Date.now();
       loadQuestion(0);
       startTimer();
-      saveActiveSession();
     });
 
     function startTimer() {
@@ -1225,23 +1233,6 @@
           timerDisplay.classList.remove("normal");
         }
       }, 1000);
-    }
-
-    async function saveActiveSession() {
-      try {
-        const sessionRef = doc(db, "student_responses", `${classId}_${student.id}_metadata`);
-        await setDoc(sessionRef, {
-          classId: classId,
-          studentId: student.id,
-          studentName: student.name,
-          location: student.location,
-          joinedAt: new Date().toISOString(),
-          status: "active",
-          lastActiveQuestion: 1
-        });
-      } catch (err) {
-        console.error("Firestore Error starting active session: ", err);
-      }
     }
 
     function renderPaletteGrid() {
@@ -1331,46 +1322,15 @@
         }
       });
       
-      saveOptionToFirestore(currentIdx, letter);
-    }
-
-    async function saveOptionToFirestore(qIdx, selectedLetter) {
-      if (!student.id) return;
-      
       let qStatus = "answered";
-      if (studentAnswers[qIdx].status === "marked" || studentAnswers[qIdx].status === "marked-answered") {
+      if (studentAnswers[currentIdx].status === "marked" || studentAnswers[currentIdx].status === "marked-answered") {
         qStatus = "marked-answered";
       }
-      
-      studentAnswers[qIdx].status = qStatus;
+      studentAnswers[currentIdx].status = qStatus;
       updatePaletteUI();
-
-      try {
-        const responseId = `${classId}_${student.id}_q${qIdx}`;
-        const responseRef = doc(db, "student_responses", responseId);
-        
-        await setDoc(responseRef, {
-          classId: classId,
-          studentId: student.id,
-          studentName: student.name,
-          location: student.location,
-          questionIndex: qIdx,
-          selectedOption: selectedLetter,
-          status: qStatus,
-          timestamp: new Date().toISOString()
-        });
-        
-        await setDoc(doc(db, "student_responses", `${classId}_${student.id}_metadata`), {
-          lastActiveQuestion: qIdx + 1,
-          lastActiveTime: new Date().toISOString()
-        }, { merge: true });
-        
-      } catch (err) {
-        console.error("Firestore Write Error: ", err);
-      }
     }
 
-    btnClear.addEventListener("click", async () => {
+    btnClear.addEventListener("click", () => {
       studentAnswers[currentIdx].selectedOption = null;
       
       const cards = optionsList.querySelectorAll(".option-card");
@@ -1383,27 +1343,9 @@
       }
       
       updatePaletteUI();
-      
-      try {
-        const responseId = `${classId}_${student.id}_q${currentIdx}`;
-        const responseRef = doc(db, "student_responses", responseId);
-        
-        await setDoc(responseRef, {
-          classId: classId,
-          studentId: student.id,
-          studentName: student.name,
-          location: student.location,
-          questionIndex: currentIdx,
-          selectedOption: null,
-          status: studentAnswers[currentIdx].status,
-          timestamp: new Date().toISOString()
-        });
-      } catch (err) {
-        console.error("Firestore Clear Response Error: ", err);
-      }
     });
 
-    btnMark.addEventListener("click", async () => {
+    btnMark.addEventListener("click", () => {
       const selected = studentAnswers[currentIdx].selectedOption;
       let newStatus = "marked";
       
@@ -1414,30 +1356,13 @@
       studentAnswers[currentIdx].status = newStatus;
       updatePaletteUI();
       
-      try {
-        const responseId = `${classId}_${student.id}_q${currentIdx}`;
-        const responseRef = doc(db, "student_responses", responseId);
-        
-        await setDoc(responseRef, {
-          classId: classId,
-          studentId: student.id,
-          studentName: student.name,
-          location: student.location,
-          questionIndex: currentIdx,
-          selectedOption: selected,
-          status: newStatus,
-          timestamp: new Date().toISOString()
-        });
-      } catch (err) {
-        console.error("Firestore Mark Review Error: ", err);
-      }
-      
       if (currentIdx < questions.length - 1) {
-        loadQuestion(currentIdx + 1);
+        saveAndNavigate(currentIdx + 1);
       }
     });
 
     function saveAndNavigate(targetIndex) {
+      trackTimeOnCurrentQuestion();
       const currentSelected = studentAnswers[currentIdx].selectedOption;
       
       if (currentSelected !== null) {
@@ -1506,35 +1431,24 @@
       submitOverlay.classList.remove("active");
     });
 
-    btnConfirmSubmit.addEventListener("click", async () => {
+    btnConfirmSubmit.addEventListener("click", () => {
       submitOverlay.classList.remove("active");
-      await executeSubmitTest();
+      executeSubmitTest();
     });
 
-    async function autoSubmitTest() {
+    function autoSubmitTest() {
       alert("Time is up! Your mock test is being submitted automatically.");
-      await executeSubmitTest();
+      executeSubmitTest();
     }
 
-    async function executeSubmitTest() {
-      clearInterval(timerInterval);
-      
-      try {
-        await setDoc(doc(db, "student_responses", `${classId}_${student.id}_metadata`), {
-          status: "submitted",
-          submittedAt: new Date().toISOString(),
-          scorePreview: calculateScore()
-        }, { merge: true });
-      } catch (err) {
-        console.error("Firestore Final Submit Error: ", err);
+    function encryptToken(dataObj) {
+      const jsonStr = JSON.stringify(dataObj);
+      const key = "CBTMockTestKey";
+      let result = "";
+      for (let i = 0; i < jsonStr.length; i++) {
+        result += String.fromCharCode(jsonStr.charCodeAt(i) ^ key.charCodeAt(i % key.length));
       }
-
-      const stats = getSummaryStats();
-      document.getElementById("final-name").textContent = student.name;
-      document.getElementById("final-id").textContent = `${student.id} (${student.location})`;
-      document.getElementById("final-answered").textContent = `${stats.answered} / ${questions.length}`;
-      
-      completedOverlay.classList.add("active");
+      return btoa(unescape(encodeURIComponent(result)));
     }
 
     function calculateScore() {
@@ -1549,6 +1463,71 @@
         }
       }
       return score;
+    }
+
+    function executeSubmitTest() {
+      clearInterval(timerInterval);
+      trackTimeOnCurrentQuestion();
+
+      const score = calculateScore();
+      const stats = getSummaryStats();
+
+      const results = questions.map((q, idx) => {
+        const ansState = studentAnswers[idx];
+        const selected = ansState.selectedOption;
+        const correctLetter = ["A", "B", "C", "D"][q.correctIndex];
+        const isCorrect = (selected === correctLetter);
+        const status = selected === null ? "unattempted" : (isCorrect ? "correct" : "incorrect");
+        
+        return {
+          qNum: idx + 1,
+          questionText: q.text,
+          selectedOption: selected || "Unattempted",
+          correctOption: correctLetter,
+          status: status,
+          timeSpent: questionTimes[idx] || 0
+        };
+      });
+
+      const tokenPayload = {
+        studentName: student.name,
+        studentId: student.id,
+        location: student.location,
+        classId: classId,
+        submittedAt: new Date().toISOString(),
+        score: score,
+        totalQuestions: questions.length,
+        results: results
+      };
+
+      const encryptedToken = encryptToken(tokenPayload);
+
+      document.getElementById("final-name").textContent = student.name;
+      document.getElementById("final-id").textContent = `${student.id} (${student.location})`;
+      document.getElementById("final-answered").textContent = `${stats.answered} / ${questions.length}`;
+      
+      const tokenBox = document.getElementById("exam-token-box");
+      tokenBox.value = encryptedToken;
+      
+      document.getElementById("btn-copy-token").onclick = () => {
+        navigator.clipboard.writeText(encryptedToken).then(() => {
+          const btn = document.getElementById("btn-copy-token");
+          btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+          setTimeout(() => {
+            btn.innerHTML = `<i class="fa-regular fa-clipboard"></i> Copy Token`;
+          }, 2000);
+        });
+      };
+
+      document.getElementById("btn-download-token").onclick = () => {
+        const blob = new Blob([encryptedToken], { type: "text/plain;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${student.id}_exam_token.cbt`;
+        link.click();
+      };
+
+      completedOverlay.classList.add("active");
     }
   </script>
 </body>

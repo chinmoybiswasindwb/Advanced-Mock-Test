@@ -11,6 +11,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- FontAwesome for Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- jsPDF and jsPDF-AutoTable CDNs for PDF Report Card generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
   <style>
     /* CSS Variables & Reset */
@@ -566,6 +569,98 @@
         justify-content: center;
       }
     }
+    
+    /* Modal Details Overlay */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 7, 18, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--transition-normal);
+      padding: 1.5rem;
+    }
+
+    .overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .details-modal {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 900px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      transform: scale(0.95);
+      transition: all var(--transition-normal);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .overlay.active .details-modal {
+      transform: scale(1);
+    }
+
+    /* Details Table */
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .details-table th, .details-table td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .details-table th {
+      background: rgba(255, 255, 255, 0.03);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .details-table tr:hover {
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-badge.correct {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--color-answered);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-badge.incorrect {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--color-unanswered);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .status-badge.unattempted {
+      background: rgba(100, 116, 139, 0.1);
+      color: var(--text-muted);
+      border: 1px solid rgba(100, 116, 139, 0.2);
+    }
   </style>
 </head>
 <body>
@@ -586,8 +681,8 @@
       
       <div class="header-actions">
         <div class="connection-status" style="margin-right: 1rem;">
-          <div class="status-dot" id="db-status-dot"></div>
-          <span id="db-status-text" style="color:var(--text-secondary)">Connecting...</span>
+          <div class="status-dot online" id="db-status-dot"></div>
+          <span id="db-status-text" style="color:var(--text-secondary)">Offline Import Active</span>
         </div>
         
         <select id="class-filter" class="form-input" style="padding: 0.5rem 1rem; background: rgba(30, 41, 59, 0.6); border-radius: 10px; font-size: 0.85rem; margin-right: 1rem; color: #fff; border: 1px solid var(--border-color); font-family: 'Outfit', sans-serif; cursor: pointer; transition: all var(--transition-fast);">
@@ -607,11 +702,39 @@
       </div>
     </header>
 
+    <!-- Import Student Data Panel -->
+    <div class="panel-card" style="margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem;">
+      <div class="panel-title" style="margin-bottom: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
+        <i class="fa-solid fa-file-import" style="color: var(--accent);"></i>
+        <span>Import Student Data Token</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
+        <!-- Paste Area -->
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <label style="font-size: 0.85rem; font-weight: 500; color: var(--text-secondary);">Paste Exam Token String:</label>
+          <textarea id="import-token-area" class="form-input" style="height: 90px; font-family: monospace; font-size: 0.75rem; resize: none; width: 100%; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 10px; color:#fff;" placeholder="Paste Base64 token here..."></textarea>
+          <button class="btn btn-primary" id="btn-import-token" style="justify-content: center; padding: 0.5rem;">
+            <i class="fa-solid fa-key"></i> Import Token
+          </button>
+        </div>
+        <!-- Drag & Drop Area -->
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <label style="font-size: 0.85rem; font-weight: 500; color: var(--text-secondary);">Or Upload / Drop .cbt File:</label>
+          <div id="drop-zone" style="height: 90px; border: 2px dashed var(--border-color); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition-fast); background: rgba(255,255,255,0.01);">
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.5rem; color: var(--text-secondary); margin-bottom: 0.25rem;"></i>
+            <span style="font-size: 0.8rem; color: var(--text-secondary);">Drag file here or click to browse</span>
+            <input type="file" id="file-uploader" accept=".cbt" style="display: none;">
+          </div>
+          <div id="upload-status" style="font-size: 0.8rem; height: 32px; display: flex; align-items: center; color: var(--color-answered);"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Stats Banner -->
     <div class="stats-banner">
       <div class="stat-card">
         <div class="stat-info">
-          <div class="stat-label">Active Candidates</div>
+          <div class="stat-label">Imported Candidates</div>
           <div class="stat-value" id="stat-active-count">0</div>
         </div>
         <div class="stat-icon blue">
@@ -631,7 +754,7 @@
       
       <div class="stat-card">
         <div class="stat-info">
-          <div class="stat-label">Total Answers Saved</div>
+          <div class="stat-label">Total Answers Imported</div>
           <div class="stat-value" id="stat-answers-count">0</div>
         </div>
         <div class="stat-icon orange">
@@ -695,23 +818,14 @@
 
   </div>
 
-  <!-- Firebase Script Integration -->
-  <script type="module">
-    import { db } from "./firebase-config.js";
-    import { collection, onSnapshot, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+  <!-- Local Token Import, Storage, Analytics, and PDF Report Generation Script -->
+  <script>
     // Application State
     const sessionData = {
-      students: {}, // uniqueStudentKey ("classId_studentId") -> { metadata, answers: { qIdx -> { selectedOption, status, timestamp } } }
-      totalAnswersCount: 0
+      students: {} // uniqueStudentKey ("classId_studentId") -> { metadata, answers: { qIdx -> { selectedOption, status, questionText, correctOption, timeSpent } } }
     };
 
-    // Flag to identify initial loading sync batch vs real-time edits
-    let isInitialLoad = true;
-
     // DOM Elements
-    const dbStatusDot = document.getElementById("db-status-dot");
-    const dbStatusText = document.getElementById("db-status-text");
     const feedContainer = document.getElementById("feed-container");
     const feedEmpty = document.getElementById("feed-empty");
     const studentsGridContainer = document.getElementById("students-grid-container");
@@ -719,33 +833,45 @@
     const btnClearSession = document.getElementById("btn-clear-session");
     const classFilter = document.getElementById("class-filter");
 
+    const importTokenArea = document.getElementById("import-token-area");
+    const btnImportToken = document.getElementById("btn-import-token");
+    const dropZone = document.getElementById("drop-zone");
+    const fileUploader = document.getElementById("file-uploader");
+    const uploadStatus = document.getElementById("upload-status");
+
+    const detailsOverlay = document.getElementById("details-overlay");
+    const btnCloseDetails = document.getElementById("btn-close-details");
+
     // Stats Elements
     const statActiveCount = document.getElementById("stat-active-count");
     const statSubmittedCount = document.getElementById("stat-submitted-count");
     const statAnswersCount = document.getElementById("stat-answers-count");
     const statAvgCompletion = document.getElementById("stat-avg-completion");
 
-    // Check Firebase Reference
-    if (db) {
-      dbStatusDot.classList.add("online");
-      dbStatusText.textContent = "Live Link Active";
-      initializeRealtimeListener();
-    } else {
-      dbStatusDot.classList.remove("online");
-      dbStatusText.textContent = "Pending Config";
+    // Initialize application on DOM load
+    window.addEventListener("DOMContentLoaded", () => {
+      loadSavedData();
+      updateStatsAndDashboard();
+      setupImportListeners();
+    });
+
+    // Load imported student data from localStorage
+    function loadSavedData() {
+      const saved = localStorage.getItem("cbt_imported_students");
+      if (saved) {
+        try {
+          sessionData.students = JSON.parse(saved);
+        } catch (err) {
+          console.error("Error loading localStorage imports: ", err);
+        }
+      }
     }
 
     // Filter event listener
     classFilter.addEventListener("change", () => {
       updateStatsAndDashboard();
       
-      // Clear feed and show placeholder to let filtered logs flow in fresh
-      feedContainer.innerHTML = "";
-      // Re-trigger feed-empty check
       const selectedClass = classFilter.value;
-      let hasFeedItems = false;
-      
-      // We don't reconstruct full history in the feed, just wait for new live edits for this class
       feedContainer.innerHTML = `
         <div class="empty-state" style="padding:2rem 1rem; border:none;" id="feed-empty">
           <i class="fa-solid fa-list-check"></i>
@@ -754,181 +880,178 @@
       `;
     });
 
-    // Initialize Firestore real-time collection observer
-    function initializeRealtimeListener() {
+    // Setup Token Import event listeners
+    function setupImportListeners() {
+      // Paste Token Import
+      btnImportToken.addEventListener("click", () => {
+        const token = importTokenArea.value.trim();
+        if (token) {
+          importToken(token);
+        } else {
+          alert("Please paste an exam token string first.");
+        }
+      });
+
+      // File Uploader click trigger
+      dropZone.addEventListener("click", () => {
+        fileUploader.click();
+      });
+
+      // Drag and drop events
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = "var(--accent)";
+        dropZone.style.background = "rgba(99, 102, 241, 0.05)";
+      });
+
+      const resetDropZone = () => {
+        dropZone.style.borderColor = "var(--border-color)";
+        dropZone.style.background = "rgba(255, 255, 255, 0.01)";
+      };
+
+      dropZone.addEventListener("dragleave", resetDropZone);
+      dropZone.addEventListener("dragend", resetDropZone);
+
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        resetDropZone();
+        const file = e.dataTransfer.files[0];
+        if (file) {
+          handleFile(file);
+        }
+      });
+
+      fileUploader.addEventListener("change", () => {
+        const file = fileUploader.files[0];
+        if (file) {
+          handleFile(file);
+        }
+      });
+    }
+
+    function handleFile(file) {
+      if (!file.name.endsWith(".cbt")) {
+        alert("Please upload a valid .cbt file.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const token = e.target.result.trim();
+        importToken(token);
+      };
+      reader.readAsText(file);
+    }
+
+    function decryptToken(tokenStr) {
       try {
-        const unsubscribe = onSnapshot(collection(db, "student_responses"), (snapshot) => {
-          
-          snapshot.docChanges().forEach((change) => {
-            const docId = change.doc.id;
-            const data = change.doc.data();
-            const changeType = change.type;
-
-            // Deduce classId and studentId
-            const classId = data.classId || "physics";
-            const sId = data.studentId;
-            
-            if (!sId) return; // skip malformed documents
-            
-            const uniqueStudentKey = `${classId}_${sId}`;
-
-            if (docId.endsWith("_metadata")) {
-              // Handle Student Session Metadata document
-              if (changeType === "removed") {
-                if (sessionData.students[uniqueStudentKey]) {
-                  delete sessionData.students[uniqueStudentKey];
-                }
-              } else {
-                // added or modified
-                if (!sessionData.students[uniqueStudentKey]) {
-                  sessionData.students[uniqueStudentKey] = { metadata: { ...data, classId }, answers: {} };
-                } else {
-                  sessionData.students[uniqueStudentKey].metadata = { ...data, classId };
-                }
-                
-                // Real-time flash notification for updates
-                if (!isInitialLoad) {
-                  logActivity({ ...data, classId }, "metadata", changeType);
-                }
-              }
-
-            } else if (docId.includes("_q")) {
-              // Handle Question Answer response document
-              const qIdx = data.questionIndex;
-
-              if (changeType === "removed") {
-                if (sessionData.students[uniqueStudentKey] && sessionData.students[uniqueStudentKey].answers[qIdx]) {
-                  delete sessionData.students[uniqueStudentKey].answers[qIdx];
-                }
-              } else {
-                // added or modified
-                if (!sessionData.students[uniqueStudentKey]) {
-                  sessionData.students[uniqueStudentKey] = { 
-                    metadata: { classId, studentId: sId, studentName: data.studentName || "Guest", location: data.location || "Unknown", status: "active" }, 
-                    answers: {} 
-                  };
-                }
-                
-                const oldAnswer = sessionData.students[uniqueStudentKey].answers[qIdx];
-                sessionData.students[uniqueStudentKey].answers[qIdx] = data;
-
-                // Log response update
-                if (!isInitialLoad) {
-                  if (!oldAnswer || oldAnswer.selectedOption !== data.selectedOption || oldAnswer.status !== data.status) {
-                    logActivity({ ...data, classId }, "answer", changeType);
-                  }
-                }
-              }
-            }
-          });
-
-          // Rebuild dashboard representation after batch processing
-          updateStatsAndDashboard();
-          
-          isInitialLoad = false;
-        }, (err) => {
-          console.error("Firestore Listener error: ", err);
-          document.getElementById("feed-status").textContent = "Error: " + err.message;
-        });
+        const key = "CBTMockTestKey";
+        const decoded = decodeURIComponent(escape(atob(tokenStr)));
+        let result = "";
+        for (let i = 0; i < decoded.length; i++) {
+          result += String.fromCharCode(decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        return JSON.parse(result);
       } catch (err) {
-        console.error("Error setting up real-time listener: ", err);
+        console.error("Token Decryption error: ", err);
+        return null;
       }
     }
 
-    // Log Activity Feed Entry
-    function logActivity(data, type, changeType) {
-      const classId = data.classId || "physics";
-      const selectedClass = classFilter.value;
-      
-      // Filter log items based on dropdown selection
-      if (selectedClass !== "all" && classId !== selectedClass) {
-        return; // skip logs from other classes
+    function importToken(tokenStr) {
+      const data = decryptToken(tokenStr);
+      if (!data) {
+        alert("❌ Error: Invalid exam token string. Please verify you copied the entire token.");
+        return;
       }
       
-      // Hide empty placeholder
+      const { studentName, studentId, location, classId, score, results, totalQuestions, submittedAt } = data;
+      if (!studentId || !studentName || !classId || !results) {
+        alert("❌ Error: Token format is invalid or missing critical fields.");
+        return;
+      }
+
+      const uniqueKey = `${classId}_${studentId}`;
+      if (sessionData.students[uniqueKey]) {
+        if (!confirm(`Student ${studentName} (ID: ${studentId}) is already imported. Overwrite their data?`)) {
+          return;
+        }
+      }
+
+      const answersMap = {};
+      results.forEach((res, index) => {
+        answersMap[index] = {
+          selectedOption: res.selectedOption === "Unattempted" ? null : res.selectedOption,
+          status: res.status,
+          questionText: res.questionText,
+          correctOption: res.correctOption,
+          timeSpent: res.timeSpent
+        };
+      });
+
+      sessionData.students[uniqueKey] = {
+        metadata: {
+          classId,
+          studentId,
+          studentName,
+          location,
+          scorePreview: score,
+          status: "submitted",
+          submittedAt: submittedAt || new Date().toISOString()
+        },
+        answers: answersMap,
+        originalResults: results
+      };
+
+      // Save to localStorage
+      localStorage.setItem("cbt_imported_students", JSON.stringify(sessionData.students));
+      
+      // Update statistics and dashboard UI
+      updateStatsAndDashboard();
+      
+      // Log to feed
+      logActivity(data);
+      
+      // Clear input fields
+      importTokenArea.value = "";
+      fileUploader.value = "";
+
+      uploadStatus.innerHTML = `✅ Successfully imported <strong>${studentName}</strong> (${classId.toUpperCase()})`;
+      setTimeout(() => {
+        uploadStatus.innerHTML = "";
+      }, 5000);
+    }
+
+    function logActivity(data) {
       const emptyPlaceholder = document.getElementById("feed-empty");
       if (emptyPlaceholder) emptyPlaceholder.style.display = "none";
       
       const item = document.createElement("div");
-      item.className = "feed-item";
+      item.className = "feed-item submit-highlight";
       
-      const timeStr = new Date().toLocaleTimeString();
-      const classBadge = classId.toUpperCase();
+      const timeStr = new Date(data.submittedAt).toLocaleTimeString();
+      const classBadge = data.classId.toUpperCase();
       
-      if (type === "metadata") {
-        if (data.status === "submitted") {
-          item.classList.add("submit-highlight");
-          item.innerHTML = `
-            <div class="feed-item-header">
-              <span class="feed-timestamp">${timeStr}</span>
-              <span style="color:var(--color-answered); font-weight:700">[${classBadge}] SUBMITTED</span>
-            </div>
-            <div class="feed-item-body">
-              🎓 <strong>${data.studentName}</strong> (${data.location}) submitted paper! Score: <strong>${data.scorePreview !== undefined ? data.scorePreview : 'Pending'}</strong>
-            </div>
-          `;
-        } else {
-          item.classList.add("highlight");
-          item.innerHTML = `
-            <div class="feed-item-header">
-              <span class="feed-timestamp">${timeStr}</span>
-              <span style="color:var(--accent)">[${classBadge}] NEW SESSION</span>
-            </div>
-            <div class="feed-item-body">
-              ⚡ <strong>${data.studentName}</strong> (${data.location}) entered the test room.
-            </div>
-          `;
-        }
-      } else if (type === "answer") {
-        item.classList.add("highlight");
-        const qNum = data.questionIndex + 1;
-        const option = data.selectedOption;
-        
-        if (option === null || option === undefined) {
-          item.innerHTML = `
-            <div class="feed-item-header">
-              <span class="feed-timestamp">${timeStr}</span>
-              <span style="color:var(--color-unanswered)">[${classBadge}] CLEARED</span>
-            </div>
-            <div class="feed-item-body">
-              ↩️ <strong>${data.studentName}</strong> cleared choice for <strong>Question ${qNum}</strong>.
-            </div>
-          `;
-        } else {
-          let actionLabel = "selected";
-          let actionColor = "var(--color-answered)";
-          if (data.status.startsWith("marked")) {
-            actionLabel = "flagged review";
-            actionColor = "var(--color-review)";
-          }
-          
-          item.innerHTML = `
-            <div class="feed-item-header">
-              <span class="feed-timestamp">${timeStr}</span>
-              <span style="color:${actionColor}">[${classBadge}] ANSWER CLICK</span>
-            </div>
-            <div class="feed-item-body">
-              ✏️ <strong>${data.studentName}</strong> ${actionLabel} <strong>Option ${option}</strong> for <strong>Question ${qNum}</strong>.
-            </div>
-          `;
-        }
-      }
-
-      // Add to top of feed
+      item.innerHTML = `
+        <div class="feed-item-header">
+          <span class="feed-timestamp">${timeStr}</span>
+          <span style="color:var(--color-answered); font-weight:700">[${classBadge}] IMPORTED</span>
+        </div>
+        <div class="feed-item-body">
+          🎓 <strong>${data.studentName}</strong> (ID: ${data.studentId}) from ${data.location} imported. Score: <strong>${data.score} pts</strong>
+        </div>
+      `;
+      
       feedContainer.insertBefore(item, feedContainer.firstChild);
 
-      // Limit feed length to recent 50 entries
       while (feedContainer.children.length > 50) {
         feedContainer.removeChild(feedContainer.lastChild);
       }
     }
 
-    // Refresh dashboard stats and grid cards
     function updateStatsAndDashboard() {
       const selectedClass = classFilter.value;
       const studentKeys = Object.keys(sessionData.students);
       
-      // Filter student keys
       const filteredKeys = studentKeys.filter(key => {
         const student = sessionData.students[key];
         return selectedClass === "all" || student.metadata.classId === selectedClass;
@@ -963,7 +1086,6 @@
           activeCount++;
         }
 
-        // Count non-empty answers
         let answeredCount = 0;
         Object.keys(answers).forEach((qKey) => {
           const ans = answers[qKey];
@@ -982,18 +1104,12 @@
         }
         totalQuestionsTarget += qCount;
 
-        // Create student card UI
         const card = document.createElement("div");
         card.className = "student-card";
         
-        let badgeClass = "active";
-        let badgeLabel = "Active Test";
-        if (meta.status === "submitted") {
-          badgeClass = "submitted";
-          badgeLabel = "Submitted";
-        }
+        let badgeClass = "submitted";
+        let badgeLabel = "Submitted";
         
-        // Build mini progress grid
         let miniGridHtml = "";
         for (let i = 0; i < qCount; i++) {
           const ans = answers[i];
@@ -1013,9 +1129,7 @@
           `;
         }
 
-        const scoreText = (meta.status === "submitted" && meta.scorePreview !== undefined) 
-          ? `Score: <span class="score">${meta.scorePreview} pts</span>` 
-          : `<span style="color:var(--text-muted)">Testing...</span>`;
+        const scoreText = `Score: <span class="score">${meta.scorePreview} pts</span>`;
 
         card.innerHTML = `
           <div class="student-card-header">
@@ -1027,25 +1141,32 @@
             <span class="student-badge ${badgeClass}">${badgeLabel}</span>
           </div>
           
-          <div class="mini-palette" style="grid-template-columns: repeat(${qCount === 10 ? 5 : 5}, 1fr);">
+          <div class="mini-palette" style="grid-template-columns: repeat(6, 1fr);">
             ${miniGridHtml}
           </div>
 
-          <div class="card-footer">
+          <div class="card-footer" style="margin-bottom: 0.75rem;">
             <span>Answered: <strong>${answeredCount} / ${qCount}</strong></span>
             <span>${scoreText}</span>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; margin-top: auto;">
+            <button class="btn btn-secondary" onclick="showStudentDetails('${key}')" style="flex: 1; font-size: 0.75rem; padding: 0.4rem; justify-content: center;">
+              <i class="fa-solid fa-circle-info"></i> View Details
+            </button>
+            <button class="btn btn-primary" onclick="downloadReportPDF('${key}')" style="flex: 1; font-size: 0.75rem; padding: 0.4rem; justify-content: center; background: var(--color-answered); border-color: var(--color-answered);">
+              <i class="fa-solid fa-file-pdf"></i> PDF Report
+            </button>
           </div>
         `;
 
         studentsGridContainer.appendChild(card);
       });
 
-      // Update counters
-      statActiveCount.textContent = activeCount;
+      statActiveCount.textContent = activeCount + submittedCount; // Total imported candidates
       statSubmittedCount.textContent = submittedCount;
       statAnswersCount.textContent = totalAnswers;
 
-      // Completion % logic
       if (totalQuestionsTarget > 0) {
         const compPercent = Math.round((totalAnswers / totalQuestionsTarget) * 100);
         statAvgCompletion.textContent = `${compPercent}%`;
@@ -1055,51 +1176,333 @@
     }
 
     // Reset Data Session Button
-    btnClearSession.addEventListener("click", async () => {
-      if (confirm("🚨 WARNING: Are you sure you want to delete ALL student responses and active sessions? This cannot be undone.")) {
-        btnClearSession.disabled = true;
-        btnClearSession.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Clearing Database...`;
+    btnClearSession.addEventListener("click", () => {
+      if (confirm("🚨 WARNING: Are you sure you want to delete ALL imported student sessions? This cannot be undone.")) {
+        sessionData.students = {};
+        localStorage.removeItem("cbt_imported_students");
         
-        try {
-          const querySnapshot = await getDocs(collection(db, "student_responses"));
-          
-          if (querySnapshot.empty) {
-            alert("No records to clear.");
-            resetClearBtn();
-            return;
-          }
-          
-          const batch = writeBatch(db);
-          querySnapshot.forEach((docSnap) => {
-            batch.delete(docSnap.ref);
-          });
-          
-          await batch.commit();
-          
-          // Clear local UI components
-          sessionData.students = {};
-          sessionData.totalAnswersCount = 0;
-          feedContainer.innerHTML = `
-            <div class="empty-state" style="padding:2rem 1rem; border:none;" id="feed-empty">
-              <i class="fa-solid fa-list-check"></i>
-              <p style="font-size:0.85rem;">Session reset. Waiting for new submissions...</p>
-            </div>
-          `;
-          updateStatsAndDashboard();
-          alert("Firestore collection cleared successfully!");
-        } catch (err) {
-          console.error("Firestore Delete Collection Error: ", err);
-          alert("Error clearing collection: " + err.message);
-        } finally {
-          resetClearBtn();
-        }
+        feedContainer.innerHTML = `
+          <div class="empty-state" style="padding:2rem 1rem; border:none;" id="feed-empty">
+            <i class="fa-solid fa-list-check"></i>
+            <p style="font-size:0.85rem;">Dashboard cleared. Import tokens to populate data.</p>
+          </div>
+        `;
+        updateStatsAndDashboard();
+        alert("Dashboard cleared successfully!");
       }
     });
 
-    function resetClearBtn() {
-      btnClearSession.disabled = false;
-      btnClearSession.innerHTML = `<i class="fa-solid fa-trash-can"></i> Clear All Data`;
+    // Details Modal Populator & Close
+    btnCloseDetails.addEventListener("click", () => {
+      detailsOverlay.classList.remove("active");
+    });
+
+    function showStudentDetails(studentKey) {
+      const student = sessionData.students[studentKey];
+      if (!student) return;
+      
+      const meta = student.metadata;
+      const answers = student.answers;
+
+      document.getElementById("detail-name").textContent = meta.studentName;
+      document.getElementById("detail-id-loc").textContent = `${meta.studentId} (${meta.location})`;
+      document.getElementById("detail-class").textContent = meta.classId.toUpperCase();
+      
+      const qKeys = Object.keys(answers);
+      const qCount = qKeys.length;
+      let correct = 0;
+      let incorrect = 0;
+      qKeys.forEach((qKey) => {
+        const ans = answers[qKey];
+        if (ans.status === "correct") correct++;
+        else if (ans.status === "incorrect") incorrect++;
+      });
+      const accuracy = qCount > 0 ? Math.round((correct / (correct + incorrect || 1)) * 100) : 0;
+      
+      document.getElementById("detail-score-acc").textContent = `${meta.scorePreview} pts (${accuracy}% Acc)`;
+
+      const tableBody = document.getElementById("detail-table-body");
+      tableBody.innerHTML = "";
+
+      qKeys.forEach((qKey, index) => {
+        const ans = answers[qKey];
+        const tr = document.createElement("tr");
+
+        const qNum = index + 1;
+        const qText = ans.questionText || `Question Description #${qNum}`;
+        const selected = ans.selectedOption || "Unattempted";
+        const correctOpt = ans.correctOption || "-";
+        
+        let statusClass = "unattempted";
+        let statusLabel = "Unattempted";
+        if (ans.status === "correct") {
+          statusClass = "correct";
+          statusLabel = "Correct";
+        } else if (ans.status === "incorrect") {
+          statusClass = "incorrect";
+          statusLabel = "Incorrect";
+        }
+
+        const timeSpentStr = ans.timeSpent !== undefined
+          ? `${Math.floor(ans.timeSpent / 60)}m ${ans.timeSpent % 60}s`
+          : "-";
+
+        tr.innerHTML = `
+          <td>Q${qNum}</td>
+          <td style="max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${qText}">${qText}</td>
+          <td><span style="font-weight:600;">${selected}</span></td>
+          <td><span style="font-weight:600; color:var(--color-answered);">${correctOpt}</span></td>
+          <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+          <td style="font-family: monospace;">${timeSpentStr}</td>
+        `;
+        tableBody.appendChild(tr);
+      });
+
+      detailsOverlay.classList.add("active");
     }
+
+    // PDF Report Card Generation
+    function downloadReportPDF(studentKey) {
+      const student = sessionData.students[studentKey];
+      if (!student) return;
+      
+      const meta = student.metadata;
+      const answers = student.answers;
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Banner Header
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, 210, 38, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.text("CBT MOCK TEST REPORT CARD", 14, 24);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text("Computer-Based Test Platform - Academic Performance Analytics", 14, 30);
+
+      // Candidate Information Section
+      doc.setTextColor(50, 50, 50);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("CANDIDATE INFORMATION", 14, 48);
+      doc.setDrawColor(200, 200, 200);
+      doc.line(14, 50, 196, 50);
+
+      doc.setFont("helvetica", "normal");
+      doc.text("Candidate Name:", 14, 58);
+      doc.setFont("helvetica", "bold");
+      doc.text(String(meta.studentName), 50, 58);
+
+      doc.setFont("helvetica", "normal");
+      doc.text("Student ID / Roll:", 14, 64);
+      doc.setFont("helvetica", "bold");
+      doc.text(String(meta.studentId), 50, 64);
+
+      doc.setFont("helvetica", "normal");
+      doc.text("Current Location:", 14, 70);
+      doc.setFont("helvetica", "bold");
+      doc.text(String(meta.location), 50, 70);
+
+      // Right Column Candidate Info
+      doc.setFont("helvetica", "normal");
+      doc.text("Batch / Class:", 110, 58);
+      doc.setFont("helvetica", "bold");
+      doc.text(String(meta.classId.toUpperCase()), 145, 58);
+
+      doc.setFont("helvetica", "normal");
+      doc.text("Test Date & Time:", 110, 64);
+      doc.setFont("helvetica", "bold");
+      doc.text(new Date(meta.submittedAt).toLocaleString(), 145, 64);
+
+      // Performance Summary Section
+      doc.setFont("helvetica", "bold");
+      doc.text("PERFORMANCE SUMMARY", 14, 82);
+      doc.line(14, 84, 196, 84);
+
+      const qKeys = Object.keys(answers);
+      const qCount = qKeys.length;
+      let correct = 0;
+      let incorrect = 0;
+      let unattempted = 0;
+      let totalTime = 0;
+
+      qKeys.forEach((qKey) => {
+        const ans = answers[qKey];
+        totalTime += ans.timeSpent || 0;
+        if (ans.status === "correct") correct++;
+        else if (ans.status === "incorrect") incorrect++;
+        else unattempted++;
+      });
+
+      const accuracy = qCount > 0 ? Math.round((correct / (correct + incorrect || 1)) * 100) : 0;
+      const totalMarks = qCount * 4;
+
+      doc.setFont("helvetica", "normal");
+      doc.text("Total Questions:", 14, 92);
+      doc.setFont("helvetica", "bold");
+      doc.text(String(qCount), 45, 92);
+
+      doc.setFont("helvetica", "normal");
+      doc.text("Correct Answers:", 14, 98);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(16, 185, 129); // green
+      doc.text(String(correct), 45, 98);
+
+      doc.setTextColor(50, 50, 50);
+      doc.setFont("helvetica", "normal");
+      doc.text("Incorrect Answers:", 14, 104);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(239, 68, 68); // red
+      doc.text(String(incorrect), 45, 104);
+
+      doc.setTextColor(50, 50, 50);
+      doc.setFont("helvetica", "normal");
+      doc.text("Unattempted:", 110, 92);
+      doc.setFont("helvetica", "bold");
+      doc.text(String(unattempted), 145, 92);
+
+      doc.setFont("helvetica", "normal");
+      doc.text("Final Score:", 110, 98);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(99, 102, 241); // indigo
+      doc.text(`${meta.scorePreview} / ${totalMarks} marks`, 145, 98);
+
+      doc.setTextColor(50, 50, 50);
+      doc.setFont("helvetica", "normal");
+      doc.text("Test Accuracy:", 110, 104);
+      doc.setFont("helvetica", "bold");
+      doc.text(`${accuracy}%`, 145, 104);
+
+      // Question Table Section
+      doc.setTextColor(50, 50, 50);
+      doc.setFont("helvetica", "bold");
+      doc.text("QUESTION-BY-QUESTION ANALYTICS", 14, 118);
+      doc.line(14, 120, 196, 120);
+
+      const tableData = [];
+      qKeys.forEach((qKey, index) => {
+        const ans = answers[qKey];
+        let statusText = "Unattempted";
+        if (ans.status === "correct") statusText = "Correct";
+        else if (ans.status === "incorrect") statusText = "Incorrect";
+        
+        const timeSpentStr = ans.timeSpent !== undefined
+          ? `${Math.floor(ans.timeSpent / 60)}m ${ans.timeSpent % 60}s`
+          : "-";
+
+        tableData.push([
+          `Q${index + 1}`,
+          ans.questionText || `Question ${index + 1}`,
+          ans.selectedOption || "Unattempted",
+          ans.correctOption || "-",
+          statusText,
+          timeSpentStr
+        ]);
+      });
+
+      doc.autoTable({
+        startY: 124,
+        head: [['Q.No', 'Question Description', 'Selected', 'Correct', 'Status', 'Time Spent']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [99, 102, 241], textColor: [255, 255, 255], fontStyle: 'bold' },
+        columnStyles: {
+          0: { cellWidth: 15 },
+          1: { cellWidth: 80 },
+          2: { cellWidth: 20 },
+          3: { cellWidth: 20 },
+          4: { cellWidth: 22 },
+          5: { cellWidth: 25 }
+        },
+        styles: { fontSize: 8 },
+        didParseCell: function (data) {
+          if (data.section === 'body' && data.column.index === 4) {
+            if (data.cell.raw === 'Correct') {
+              data.cell.styles.textColor = [16, 185, 129];
+              data.cell.styles.fontStyle = 'bold';
+            } else if (data.cell.raw === 'Incorrect') {
+              data.cell.styles.textColor = [239, 68, 68];
+              data.cell.styles.fontStyle = 'bold';
+            }
+          }
+        }
+      });
+
+      // Footer setup
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`Page ${i} of ${pageCount}`, 196, 285, { align: "right" });
+        doc.text("Generated by CBT Mock Test Platform - Local Analytics System", 14, 285);
+      }
+
+      doc.save(`${meta.studentId}_ReportCard.pdf`);
+    }
+
+    // Attach to global window scope for inline onclick buttons in template string
+    window.showStudentDetails = showStudentDetails;
+    window.downloadReportPDF = downloadReportPDF;
   </script>
+  <!-- Detailed Candidate Metrics Modal Overlay -->
+  <div class="overlay" id="details-overlay">
+    <div class="details-modal">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fa-solid fa-square-poll-vertical" style="color: var(--accent);"></i>
+          <span id="detail-student-title">Student Performance Analytics</span>
+        </h2>
+        <button class="btn btn-secondary" id="btn-close-details" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+          <i class="fa-solid fa-xmark"></i> Close
+        </button>
+      </div>
+      
+      <!-- Student Info Grid -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Name:</div>
+          <div id="detail-name" style="font-weight: 600; font-size: 0.95rem;">-</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">ID / Location:</div>
+          <div id="detail-id-loc" style="font-weight: 600; font-size: 0.95rem;">-</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Batch Class:</div>
+          <div id="detail-class" style="font-weight: 600; font-size: 0.95rem; color: var(--accent);">-</div>
+        </div>
+        <div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Score / Accuracy:</div>
+          <div id="detail-score-acc" style="font-weight: 600; font-size: 0.95rem; color: var(--color-answered);">-</div>
+        </div>
+      </div>
+
+      <!-- Question-by-Question Time Spent & Answers -->
+      <div style="overflow-x: auto; max-height: 40vh; overflow-y: auto;">
+        <table class="details-table">
+          <thead>
+            <tr>
+              <th style="width: 60px;">Q.No</th>
+              <th>Question Description</th>
+              <th style="width: 100px;">Selected</th>
+              <th style="width: 100px;">Correct</th>
+              <th style="width: 100px;">Status</th>
+              <th style="width: 110px;">Time Spent</th>
+            </tr>
+          </thead>
+          <tbody id="detail-table-body">
+            <!-- Populated via Javascript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
