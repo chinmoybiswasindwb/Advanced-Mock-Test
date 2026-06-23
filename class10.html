@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CBSE Class 10 CBT Mock Test</title>
-  <meta name="description" content="Secure, real-time Computer-Based Test portal for CBSE Class 10 students.">
+  <title>CBSE Class 10 CBT Mock Test - Magnetism</title>
+  <meta name="description" content="Secure, offline Computer-Based Test portal for CBSE Class 10 Magnetism exam.">
   <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -346,7 +346,7 @@
       background: rgba(13, 17, 23, 0.3);
     }
 
-    .control-left, .control-right {
+    .control-bar-buttons {
       display: flex;
       gap: 0.75rem;
     }
@@ -739,10 +739,10 @@
         flex-direction: column;
         gap: 1rem;
       }
-      .control-left, .control-right {
+      .control-bar-buttons {
         width: 100%;
       }
-      .control-left .btn, .control-right .btn {
+      .control-bar-buttons .btn {
         flex: 1;
         justify-content: center;
       }
@@ -751,7 +751,8 @@
 </head>
 <body>
 
-  <div class="app-container">
+  <!-- Main Quiz Container (Hidden initially, shown after authentication) -->
+  <div class="app-container" id="quiz-container" style="display: none;">
     
     <!-- Top Header -->
     <header>
@@ -810,7 +811,7 @@
 
         <!-- Action Control Buttons -->
         <div class="control-bar">
-          <div class="control-left">
+          <div class="control-bar-buttons control-left">
             <button class="btn btn-secondary" id="btn-prev" disabled>
               <i class="fa-solid fa-chevron-left"></i> Previous
             </button>
@@ -818,7 +819,7 @@
               Clear Response
             </button>
           </div>
-          <div class="control-right">
+          <div class="control-bar-buttons control-right">
             <button class="btn btn-warning" id="btn-mark">
               <i class="fa-regular fa-bookmark"></i> Mark for Review
             </button>
@@ -893,8 +894,8 @@
 
   </div>
 
-  <!-- Registration / Login Dialog Overlay -->
-  <div class="overlay active" id="login-overlay">
+  <!-- Registration / Login Panel Container (Shown initially) -->
+  <div class="overlay active" id="login-overlay" style="display: flex;">
     <div class="login-modal">
       <div class="modal-logo">
         <div class="brand-logo" style="width: 50px; height: 50px; border-radius: 12px; font-size: 1.5rem;">
@@ -909,15 +910,15 @@
       <div id="login-form-container">
         <div class="form-group">
           <label for="student-name">Full Name</label>
-          <input type="text" id="student-name" class="form-input" placeholder="e.g. Rahul Kumar" required autocomplete="name">
+          <input type="text" id="student-name" class="form-input" placeholder="e.g. Rahul Kumar" autocomplete="name">
         </div>
         <div class="form-group">
           <label for="student-id">Student Roll Number / ID</label>
-          <input type="text" id="student-id" class="form-input" placeholder="e.g. CBSE10-098" required>
+          <input type="text" id="student-id" class="form-input" placeholder="e.g. CBSE10-098">
         </div>
         <div class="form-group">
           <label for="student-location">Current Location (City)</label>
-          <input type="text" id="student-location" class="form-input" placeholder="e.g. Kolkata" required>
+          <input type="text" id="student-location" class="form-input" placeholder="e.g. Kolkata">
         </div>
         
         <button type="button" id="login-btn" class="btn btn-primary btn-block">
@@ -960,21 +961,17 @@
     </div>
   </div>
 
-  <!-- Test Completed Success Screen -->
+  <!-- Test Completed Success Screen & Report Card Layout -->
   <div class="overlay" id="completed-overlay">
-    <div class="login-modal submit-modal" style="max-width: 500px;">
-      <!-- Success Icon -->
+    <div class="login-modal submit-modal" style="max-width: 550px;">
       <div id="submit-success-icon" style="background: rgba(16, 185, 129, 0.1); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
         <i class="fa-solid fa-circle-check" style="color: var(--color-answered); font-size: 2.5rem; margin-bottom: 0;"></i>
       </div>
-      <!-- Error Icon (Hidden by default) -->
-      <div id="submit-error-icon" style="background: rgba(239, 68, 68, 0.1); width: 80px; height: 80px; border-radius: 50%; display: none; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
-        <i class="fa-solid fa-triangle-exclamation" style="color: var(--color-unanswered); font-size: 2.5rem; margin-bottom: 0;"></i>
-      </div>
 
-      <h2 id="submit-title">Test Submitted!</h2>
-      <p id="submit-message" style="margin-bottom: 1rem; font-size: 0.95rem; color: var(--text-secondary);">Thank you! Your responses have been successfully saved to our database.</p>
+      <h2>Examination Complete!</h2>
+      <p style="margin-bottom: 1rem; font-size: 0.95rem; color: var(--text-secondary);">Your results have been calculated and saved locally in this browser.</p>
       
+      <!-- Student Report Card Details -->
       <div style="background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-color); text-align: left; margin-bottom: 1.25rem;">
         <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.9rem;">
           <span style="color:var(--text-secondary)">Candidate Name:</span>
@@ -996,21 +993,30 @@
           <span style="color:var(--text-secondary)">Test Accuracy:</span>
           <span id="final-accuracy" style="font-weight:600; color:var(--color-answered);"> - </span>
         </div>
-        <div style="display:flex; justify-content:space-between; font-size:0.85rem; color: var(--text-muted);">
+        <div style="display:flex; justify-content:space-between; font-size:0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
           <span>Correct: <strong id="final-correct" style="color:var(--color-answered)">0</strong></span>
           <span>Incorrect: <strong id="final-incorrect" style="color:var(--color-unanswered)">0</strong></span>
           <span>Unattempted: <strong id="final-unattempted">0</strong></span>
         </div>
+
+        <!-- Scrollable Table for Question Analysis -->
+        <div style="max-height: 180px; overflow-y: auto; margin-top: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+          <h4 style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem;">Question-by-Question Breakdown</h4>
+          <div id="results-table-container"></div>
+        </div>
       </div>
 
-      <!-- Backup Token container (Hidden by default, shown if submit fails) -->
-      <div id="backup-container" style="margin-bottom: 1.25rem; display: none;">
-        <textarea id="exam-token-box" class="form-input" style="width: 100%; height: 80px; font-family: monospace; font-size: 0.8rem; resize: none; word-break: break-all; margin-bottom: 0.75rem; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 10px; color:#fff;" readonly></textarea>
+      <!-- Backup Token / Sharing container -->
+      <div id="backup-container" style="margin-bottom: 1.25rem;">
+        <p style="font-size: 0.75rem; color: var(--text-secondary); text-align: left; margin-bottom: 0.4rem;">
+          <i class="fa-solid fa-circle-exclamation"></i> Copy or download this encrypted token to share your performance log with your teacher:
+        </p>
+        <textarea id="exam-token-box" class="form-input" style="width: 100%; height: 60px; font-family: monospace; font-size: 0.75rem; resize: none; word-break: break-all; margin-bottom: 0.75rem; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 10px; color:#fff;" readonly></textarea>
         <div style="display: flex; gap: 0.75rem;">
-          <button class="btn btn-secondary" id="btn-copy-token" style="flex: 1; justify-content: center; font-size: 0.85rem;">
+          <button class="btn btn-secondary" id="btn-copy-token" style="flex: 1; justify-content: center; font-size: 0.8rem; padding: 0.5rem;">
             <i class="fa-regular fa-clipboard"></i> Copy Token
           </button>
-          <button class="btn btn-primary" id="btn-download-token" style="flex: 1; justify-content: center; font-size: 0.85rem; background: var(--color-answered); border-color: var(--color-answered);">
+          <button class="btn btn-primary" id="btn-download-token" style="flex: 1; justify-content: center; font-size: 0.8rem; padding: 0.5rem; background: var(--color-answered); border-color: var(--color-answered);">
             <i class="fa-solid fa-download"></i> Download .cbt
           </button>
         </div>
@@ -1022,13 +1028,11 @@
     </div>
   </div>
 
-  <!-- Google Sheets Integrated Exam Script -->
-  <script type="module">
-    import { SHEETS_WEB_APP_URL } from "./sheets-config.js";
-
+  <!-- Main Standalone Logic Script -->
+  <script>
     const classId = "class10";
 
-    // Class 10 mock test questions
+    // Class 10 magnetism mock test questions
     const questions = [
       {
         id: "c10_q1",
@@ -1214,6 +1218,7 @@
 
     // DOM Elements
     const loginOverlay = document.getElementById("login-overlay");
+    const quizContainer = document.getElementById("quiz-container");
     const loginBtn = document.getElementById("login-btn");
     const displayStudentName = document.getElementById("display-student-name");
     const displayStudentId = document.getElementById("display-student-id");
@@ -1235,33 +1240,33 @@
     
     const completedOverlay = document.getElementById("completed-overlay");
 
-    function trackTimeOnCurrentQuestion() {
-      if (questionStartTime === null) return;
-      const elapsed = Math.floor((Date.now() - questionStartTime) / 1000);
-      if (elapsed > 0) {
-        questionTimes[currentIdx] += elapsed;
-      }
-      questionStartTime = Date.now();
-    }
-
     window.addEventListener("DOMContentLoaded", () => {
       renderPaletteGrid();
       sessionStorage.clear();
     });
 
+    // Native Button Click Authenticate Handler
     loginBtn.addEventListener("click", () => {
-      student.name = document.getElementById("student-name").value.trim();
-      student.id = document.getElementById("student-id").value.trim().toUpperCase().replace(/\s+/g, "-");
-      student.location = document.getElementById("student-location").value.trim();
+      const inputName = document.getElementById("student-name").value.trim();
+      const inputId = document.getElementById("student-id").value.trim().toUpperCase().replace(/\s+/g, "-");
+      const inputLocation = document.getElementById("student-location").value.trim();
 
-      if (!student.name || !student.id || !student.location) {
-        alert("Please fill in all the required fields.");
+      if (!inputName || !inputId || !inputLocation) {
+        alert("Please fill in all details (Name, Roll No, Location) before starting.");
         return;
       }
 
+      student.name = inputName;
+      student.id = inputId;
+      student.location = inputLocation;
+
       displayStudentName.textContent = student.name;
       displayStudentId.textContent = `ID: ${student.id} (${student.location})`;
+      
+      // Hide Login Panel and Show Quiz Container using display styles
+      loginOverlay.style.display = "none";
       loginOverlay.classList.remove("active");
+      quizContainer.style.display = "flex";
 
       studentAnswers[0].status = "unanswered";
       questionStartTime = Date.now();
@@ -1297,156 +1302,171 @@
         const btn = document.createElement("button");
         btn.className = "grid-btn unvisited";
         btn.textContent = i + 1;
-        btn.id = `palette-btn-${i}`;
-        
         btn.addEventListener("click", () => {
-          if (loginOverlay.classList.contains("active")) return;
-          if (studentAnswers[currentIdx].status === "unvisited") {
-            studentAnswers[currentIdx].status = "unanswered";
-          }
           saveAndNavigate(i);
         });
-        
         questionsGrid.appendChild(btn);
-      }
-    }
-
-    function updatePaletteUI() {
-      for (let i = 0; i < questions.length; i++) {
-        const btn = document.getElementById(`palette-btn-${i}`);
-        if (!btn) continue;
-        btn.className = "grid-btn";
-        if (i === currentIdx) {
-          btn.classList.add("active");
-        }
-        btn.classList.add(studentAnswers[i].status);
       }
     }
 
     function loadQuestion(index) {
       currentIdx = index;
-      const question = questions[index];
       
+      const q = questions[index];
       currentQLabel.textContent = `Question ${index + 1} of ${questions.length}`;
-      questionText.textContent = question.text;
+      questionText.textContent = q.text;
       
       optionsList.innerHTML = "";
-      const selectedChoice = studentAnswers[index].selectedOption;
       
-      const optionLetters = ["A", "B", "C", "D"];
-      question.options.forEach((optText, oIdx) => {
-        const letter = optionLetters[oIdx];
+      const savedChoice = studentAnswers[index].selectedOption;
+      
+      q.options.forEach((opt, oIdx) => {
+        const optLetter = ["A", "B", "C", "D"][oIdx];
+        
         const card = document.createElement("div");
         card.className = "option-card";
-        if (selectedChoice === letter) {
+        if (savedChoice === optLetter) {
           card.classList.add("selected");
         }
         
         card.innerHTML = `
-          <div class="option-indicator">${letter}</div>
-          <div class="option-text">${optText}</div>
+          <div class="option-indicator">${optLetter}</div>
+          <div class="option-text">${opt}</div>
         `;
         
         card.addEventListener("click", () => {
-          selectOption(letter);
+          selectOption(optLetter);
         });
         
         optionsList.appendChild(card);
       });
-      
+
+      // Highlight active grid button
+      const gridBtns = questionsGrid.children;
+      for (let i = 0; i < gridBtns.length; i++) {
+        gridBtns[i].classList.remove("active");
+        if (i === index) {
+          gridBtns[i].classList.add("active");
+        }
+      }
+
+      // Sync button states
       btnPrev.disabled = (index === 0);
-      
       if (index === questions.length - 1) {
-        btnSaveNext.innerHTML = `Save & Preview <i class="fa-solid fa-flag-checkered"></i>`;
+        btnSaveNext.innerHTML = `Finish Test <i class="fa-solid fa-circle-check"></i>`;
       } else {
         btnSaveNext.innerHTML = `Save & Next <i class="fa-solid fa-chevron-right"></i>`;
       }
+
+      // Reset clear button active status
+      btnClear.disabled = (savedChoice === null);
       
-      updatePaletteUI();
+      // Keep track of start time for current question
+      questionStartTime = Date.now();
     }
 
     function selectOption(letter) {
       studentAnswers[currentIdx].selectedOption = letter;
       
-      const cards = optionsList.querySelectorAll(".option-card");
-      const optionLetters = ["A", "B", "C", "D"];
-      cards.forEach((card, oIdx) => {
-        if (optionLetters[oIdx] === letter) {
-          card.classList.add("selected");
-        } else {
-          card.classList.remove("selected");
-        }
-      });
-      
-      let qStatus = "answered";
-      if (studentAnswers[currentIdx].status === "marked" || studentAnswers[currentIdx].status === "marked-answered") {
-        qStatus = "marked-answered";
+      const curStatus = studentAnswers[currentIdx].status;
+      if (curStatus === "marked" || curStatus === "marked-answered") {
+        studentAnswers[currentIdx].status = "marked-answered";
+      } else {
+        studentAnswers[currentIdx].status = "answered";
       }
-      studentAnswers[currentIdx].status = qStatus;
-      updatePaletteUI();
+      
+      // Update local storage answers
+      loadQuestion(currentIdx);
+      updatePaletteButton(currentIdx);
     }
 
+    function updatePaletteButton(index) {
+      const btn = questionsGrid.children[index];
+      const status = studentAnswers[index].status;
+      
+      btn.className = `grid-btn ${status}`;
+      if (index === currentIdx) {
+        btn.classList.add("active");
+      }
+    }
+
+    function trackTimeOnCurrentQuestion() {
+      if (questionStartTime !== null) {
+        const delta = Math.floor((Date.now() - questionStartTime) / 1000);
+        questionTimes[currentIdx] += delta;
+        questionStartTime = null;
+      }
+    }
+
+    function saveAndNavigate(targetIdx) {
+      trackTimeOnCurrentQuestion();
+      
+      // Auto mark as unanswered if visited but no choice made
+      const curState = studentAnswers[currentIdx];
+      if (curState.selectedOption === null) {
+        if (curState.status === "unvisited") {
+          curState.status = "unanswered";
+        }
+      }
+      
+      updatePaletteButton(currentIdx);
+      loadQuestion(targetIdx);
+    }
+
+    // Prev Button
+    btnPrev.addEventListener("click", () => {
+      if (currentIdx > 0) {
+        saveAndNavigate(currentIdx - 1);
+      }
+    });
+
+    // Save & Next
+    btnSaveNext.addEventListener("click", () => {
+      // Auto mark as unanswered if no choice selected
+      const curState = studentAnswers[currentIdx];
+      if (curState.selectedOption === null && curState.status !== "marked") {
+        curState.status = "unanswered";
+      }
+      
+      updatePaletteButton(currentIdx);
+      
+      if (currentIdx < questions.length - 1) {
+        saveAndNavigate(currentIdx + 1);
+      } else {
+        // Open submission dialog
+        triggerSubmitOverlay();
+      }
+    });
+
+    // Clear Response
     btnClear.addEventListener("click", () => {
       studentAnswers[currentIdx].selectedOption = null;
-      
-      const cards = optionsList.querySelectorAll(".option-card");
-      cards.forEach(card => card.classList.remove("selected"));
-      
-      if (studentAnswers[currentIdx].status === "marked-answered") {
+      const curState = studentAnswers[currentIdx].status;
+      if (curState === "marked-answered" || curState === "marked") {
         studentAnswers[currentIdx].status = "marked";
       } else {
         studentAnswers[currentIdx].status = "unanswered";
       }
       
-      updatePaletteUI();
+      updatePaletteButton(currentIdx);
+      loadQuestion(currentIdx);
     });
 
+    // Mark For Review
     btnMark.addEventListener("click", () => {
-      const selected = studentAnswers[currentIdx].selectedOption;
-      let newStatus = "marked";
+      const curState = studentAnswers[currentIdx];
+      const hasAns = (curState.selectedOption !== null);
       
-      if (selected !== null) {
-        newStatus = "marked-answered";
-      }
-      
-      studentAnswers[currentIdx].status = newStatus;
-      updatePaletteUI();
-      
-      if (currentIdx < questions.length - 1) {
-        saveAndNavigate(currentIdx + 1);
-      }
-    });
-
-    function saveAndNavigate(targetIndex) {
-      trackTimeOnCurrentQuestion();
-      const currentSelected = studentAnswers[currentIdx].selectedOption;
-      
-      if (currentSelected !== null) {
-        if (studentAnswers[currentIdx].status !== "marked-answered") {
-          studentAnswers[currentIdx].status = "answered";
-        }
+      if (curState.status === "marked" || curState.status === "marked-answered") {
+        // Unmark
+        curState.status = hasAns ? "answered" : "unanswered";
       } else {
-        if (studentAnswers[currentIdx].status !== "marked") {
-          studentAnswers[currentIdx].status = "unanswered";
-        }
+        // Mark
+        curState.status = hasAns ? "marked-answered" : "marked";
       }
       
-      loadQuestion(targetIndex);
-    }
-
-    btnSaveNext.addEventListener("click", () => {
-      if (currentIdx < questions.length - 1) {
-        saveAndNavigate(currentIdx + 1);
-      } else {
-        saveAndNavigate(currentIdx);
-        triggerSubmitOverlay();
-      }
-    });
-
-    btnPrev.addEventListener("click", () => {
-      if (currentIdx > 0) {
-        saveAndNavigate(currentIdx - 1);
-      }
+      updatePaletteButton(currentIdx);
+      loadQuestion(currentIdx);
     });
 
     function getSummaryStats() {
@@ -1478,10 +1498,6 @@
       
       submitOverlay.classList.add("active");
     }
-
-    btnSubmitTest.addEventListener("click", () => {
-      triggerSubmitOverlay();
-    });
 
     btnCancelSubmit.addEventListener("click", () => {
       submitOverlay.classList.remove("active");
@@ -1521,7 +1537,7 @@
       return score;
     }
 
-    async function executeSubmitTest() {
+    function executeSubmitTest() {
       clearInterval(timerInterval);
       trackTimeOnCurrentQuestion();
 
@@ -1556,6 +1572,7 @@
       const accuracy = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
       const totalMarks = questions.length * 4;
 
+      // Compiled Token Payload (Matches format expected by admin panel)
       const tokenPayload = {
         studentName: student.name,
         studentId: student.id,
@@ -1569,6 +1586,24 @@
         results: results
       };
 
+      // 1. SAVE RESULTS DIRECTLY TO BROWSER'S LOCALSTORAGE (BULLETPROOF OFFLINE SYSTEM)
+      let localSubmissions = [];
+      try {
+        const saved = localStorage.getItem("cbt_class10_submissions");
+        if (saved) {
+          localSubmissions = JSON.parse(saved);
+        }
+      } catch (err) {
+        console.error("Local Storage Read Error: ", err);
+      }
+      localSubmissions.push(tokenPayload);
+      try {
+        localStorage.setItem("cbt_class10_submissions", JSON.stringify(localSubmissions));
+      } catch (err) {
+        console.error("Local Storage Write Error: ", err);
+      }
+
+      // 2. DISPLAY REPORT CARD SUMMARY
       document.getElementById("final-name").textContent = student.name;
       document.getElementById("final-id").textContent = `${student.id} (${student.location})`;
       document.getElementById("final-answered").textContent = `${stats.answered} / ${questions.length}`;
@@ -1578,63 +1613,71 @@
       document.getElementById("final-incorrect").textContent = incorrect;
       document.getElementById("final-unattempted").textContent = unattempted;
 
-      // Show Submitting Screen
-      document.getElementById("submit-title").textContent = "Submitting Exam...";
-      document.getElementById("submit-message").textContent = "Please wait while we upload your responses to the online database.";
-      document.getElementById("submit-success-icon").style.display = "flex";
-      document.getElementById("submit-error-icon").style.display = "none";
-      document.getElementById("backup-container").style.display = "none";
-      completedOverlay.classList.add("active");
-
-      try {
-        const response = await fetch(SHEETS_WEB_APP_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
-          body: JSON.stringify(tokenPayload)
-        });
-
-        const resData = await response.json();
+      // Populate detailed Question Analysis Table
+      const tableContainer = document.getElementById("results-table-container");
+      let tableHtml = `
+        <table style="width:100%; border-collapse:collapse; font-size:0.75rem; text-align:left; border: 1px solid var(--border-color);">
+          <thead>
+            <tr style="background:rgba(255,255,255,0.05);">
+              <th style="padding:0.35rem; border: 1px solid var(--border-color);">Q</th>
+              <th style="padding:0.35rem; border: 1px solid var(--border-color);">Selected</th>
+              <th style="padding:0.35rem; border: 1px solid var(--border-color);">Correct</th>
+              <th style="padding:0.35rem; border: 1px solid var(--border-color);">Status</th>
+              <th style="padding:0.35rem; border: 1px solid var(--border-color);">Time</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      results.forEach((res) => {
+        let statusColor = "var(--text-muted)";
+        if (res.status === "correct") statusColor = "var(--color-answered)";
+        else if (res.status === "incorrect") statusColor = "var(--color-unanswered)";
         
-        if (resData.status === "success") {
-          document.getElementById("submit-title").textContent = "Test Submitted!";
-          document.getElementById("submit-message").textContent = "Thank you! Your responses have been successfully saved to our database.";
-        } else {
-          throw new Error(resData.message || "Server refused save");
-        }
-      } catch (err) {
-        console.error("Submission failed: ", err);
+        const min = Math.floor(res.timeSpent / 60);
+        const sec = res.timeSpent % 60;
+        const timeStr = `${min}m ${sec}s`;
+        
+        tableHtml += `
+          <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding:0.35rem; border: 1px solid var(--border-color); font-weight:600;">Q${res.qNum}</td>
+            <td style="padding:0.35rem; border: 1px solid var(--border-color);">${res.selectedOption}</td>
+            <td style="padding:0.35rem; border: 1px solid var(--border-color); color:var(--color-answered);">${res.correctOption}</td>
+            <td style="padding:0.35rem; border: 1px solid var(--border-color); color:${statusColor}; font-weight:600;">${res.status.toUpperCase()}</td>
+            <td style="padding:0.35rem; border: 1px solid var(--border-color); font-family:monospace;">${timeStr}</td>
+          </tr>
+        `;
+      });
+      tableHtml += `</tbody></table>`;
+      tableContainer.innerHTML = tableHtml;
 
-        // Render Failsafe fallback
-        document.getElementById("submit-title").textContent = "Submission Failed!";
-        document.getElementById("submit-message").textContent = "There was a network error. Your data has not been saved online. Please copy or download this backup token and send it to your teacher.";
-        document.getElementById("submit-success-icon").style.display = "none";
-        document.getElementById("submit-error-icon").style.display = "flex";
+      // 3. SHOW COMPLETED OVERLAY WITH BACKUP SHARING TOKEN
+      const encryptedToken = encryptToken(tokenPayload);
+      const tokenBox = document.getElementById("exam-token-box");
+      tokenBox.value = encryptedToken;
 
-        const encryptedToken = encryptToken(tokenPayload);
-        const tokenBox = document.getElementById("exam-token-box");
-        tokenBox.value = encryptedToken;
-        document.getElementById("backup-container").style.display = "block";
+      document.getElementById("btn-copy-token").onclick = () => {
+        navigator.clipboard.writeText(encryptedToken).then(() => {
+          const btn = document.getElementById("btn-copy-token");
+          btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+          setTimeout(() => {
+            btn.innerHTML = `<i class="fa-regular fa-clipboard"></i> Copy Token`;
+          }, 2000);
+        });
+      };
 
-        document.getElementById("btn-copy-token").onclick = () => {
-          navigator.clipboard.writeText(encryptedToken).then(() => {
-            const btn = document.getElementById("btn-copy-token");
-            btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
-            setTimeout(() => {
-              btn.innerHTML = `<i class="fa-regular fa-clipboard"></i> Copy Token`;
-            }, 2000);
-          });
-        };
+      document.getElementById("btn-download-token").onclick = () => {
+        const blob = new Blob([encryptedToken], { type: "text/plain;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${student.id}_backup_token.cbt`;
+        link.click();
+      };
 
-        document.getElementById("btn-download-token").onclick = () => {
-          const blob = new Blob([encryptedToken], { type: "text/plain;charset=utf-8" });
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download = `${student.id}_backup_token.cbt`;
-          link.click();
-        };
-      }
+      // Hide main quiz console, show final completed panel overlay
+      quizContainer.style.display = "none";
+      completedOverlay.style.display = "flex";
+      completedOverlay.classList.add("active");
     }
   </script>
 </body>
