@@ -768,7 +768,7 @@
       <div class="timer-section">
         <div id="timer-display" class="timer-card normal">
           <i class="fa-regular fa-clock"></i>
-          <span id="time-left">30:00</span>
+          <span id="time-left">20:00</span>
         </div>
         
         <div class="user-profile">
@@ -789,7 +789,7 @@
       <!-- Left Panel: Active Question Panel -->
       <section class="question-panel">
         <div class="question-header">
-          <div class="question-number-badge" id="current-q-label">Question 1 of 5</div>
+          <div class="question-number-badge" id="current-q-label">Question 1 of 8</div>
           <div class="marks-info">
             <span class="marks-badge positive">+4 Marks</span>
             <span class="marks-badge negative">-1 Mark</span>
@@ -980,7 +980,7 @@
         </div>
         <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
           <span style="color:var(--text-secondary)">Total Questions Answered:</span>
-          <span id="final-answered" style="color:var(--color-answered); font-weight:600"> 0 / 5</span>
+          <span id="final-answered" style="color:var(--color-answered); font-weight:600"> 0 / 8</span>
         </div>
       </div>
 
@@ -1001,56 +1001,89 @@
     const questions = [
       {
         id: "c10_q1",
-        text: "Fe₂O₃ + 2Al → Al₂O₃ + 2Fe. This chemical reaction is a typical demonstration of a:",
+        text: "An object is placed in front of a convex mirror. The magnification produced by the mirror is found to be +1/3. What information does this give about the nature and position of the image?",
         options: [
-          "Combination reaction",
-          "Double displacement reaction",
-          "Decomposition reaction",
-          "Displacement reaction"
+          "Real, inverted, and located at the principal focus",
+          "Virtual, erect, diminished, and located behind the mirror",
+          "Virtual, erect, magnified, and located between P and F",
+          "Real, inverted, magnified, and located at 2F"
         ],
-        correctIndex: 3
+        correctIndex: 1
       },
       {
         id: "c10_q2",
-        text: "The Highest Common Factor (HCF) of the integers 96 and 404 is:",
+        text: "A concave mirror produces a three times magnified real image of an object placed 10 cm in front of it. Find the location of the image (v).",
         options: [
-          "120",
-          "4",
-          "10",
-          "8"
+          "+30 cm",
+          "-30 cm",
+          "-15 cm",
+          "+15 cm"
         ],
         correctIndex: 1
       },
       {
         id: "c10_q3",
-        text: "A spherical concave mirror has a radius of curvature of 20 cm. Its focal length is:",
+        text: "Under which of the following conditions can a concave mirror form a virtual, erect, and magnified image of an actual object?",
         options: [
-          "10 cm",
-          "20 cm",
-          "30 cm",
-          "40 cm"
-        ],
-        correctIndex: 0
-      },
-      {
-        id: "c10_q4",
-        text: "The organic functional group present in the carbon compound propanone (acetone) is a/an:",
-        options: [
-          "Alcohol group",
-          "Aldehyde group",
-          "Ketone group",
-          "Carboxylic acid group"
+          "When the object is placed at its centre of curvature",
+          "When the object is placed between its focus and centre of curvature",
+          "When the object is kept at a distance less than its focal length",
+          "When the object is kept at infinity"
         ],
         correctIndex: 2
       },
       {
-        id: "c10_q5",
-        text: "If the electrical resistance of a metallic conductor is doubled, the current flowing through it under constant potential difference becomes:",
+        id: "c10_q4",
+        text: "Light enters from air into a glass slab having an absolute refractive index of 1.50. If the speed of light in vacuum is 3 x 10^8 m/s, what is the speed of light in the glass slab?",
         options: [
-          "Doubled",
-          "Halved",
-          "Four times greater",
-          "One-fourth of the original"
+          "2.0 x 10^8 m/s",
+          "4.5 x 10^8 m/s",
+          "1.5 x 10^8 m/s",
+          "2.5 x 10^8 m/s"
+        ],
+        correctIndex: 0
+      },
+      {
+        id: "c10_q5",
+        text: "A ray of light traveling obliquely in air enters a transparent medium X. If the light ray bends away from the normal, what can be deduced about medium X?",
+        options: [
+          "Medium X is optically denser than air, and speed of light increases in it",
+          "Medium X is optically rarer than air, and speed of light increases in it",
+          "Medium X is optically denser than air, and speed of light decreases in it",
+          "Medium X is optically rarer than air, and speed of light decreases in it"
+        ],
+        correctIndex: 1
+      },
+      {
+        id: "c10_q6",
+        text: "A thin spherical lens has a power of -4.0 D. What is its focal length and its exact optical nature?",
+        options: [
+          "+25 cm, Convex lens",
+          "-25 cm, Concave lens",
+          "-40 cm, Concave lens",
+          "+40 cm, Convex lens"
+        ],
+        correctIndex: 1
+      },
+      {
+        id: "c10_q7",
+        text: "The absolute refractive indices of medium A, B, and C are 1.33 (water), 1.52 (crown glass), and 2.42 (diamond) respectively. In which medium will a ray of light travel the fastest, and which medium has the highest bending power?",
+        options: [
+          "Fastest in C, highest bending power in A",
+          "Fastest in A, highest bending power in C",
+          "Fastest in B, highest bending power in B",
+          "Fastest in A, highest bending power in B"
+        ],
+        correctIndex: 1
+      },
+      {
+        id: "c10_q8",
+        text: "An object is placed at a distance of 20 cm in front of a convex lens. If a real image of the same size as the object is formed on a screen on the other side, what is the focal length of the lens?",
+        options: [
+          "+20 cm",
+          "+10 cm",
+          "-10 cm",
+          "+5 cm"
         ],
         correctIndex: 1
       }
@@ -1065,7 +1098,7 @@
       studentAnswers[i] = { selectedOption: null, status: "unvisited" };
     }
 
-    let timeLeft = 30 * 60; 
+    let timeLeft = 20 * 60; 
     let timerInterval = null;
 
     // DOM Elements
