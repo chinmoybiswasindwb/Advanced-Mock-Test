@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CBSE Class 12 Physics CBT Mock Test</title>
+  <meta name="description" content="Secure, real-time Computer-Based Test portal for CBSE Class 12 Physics students.">
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* CSS Variables & Reset */
+    :root {
+      --bg-dark: #090b0e;
+      --bg-surface: rgba(22, 28, 38, 0.6);
+      --bg-card: rgba(30, 41, 59, 0.45);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.4);
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      
+      --color-unvisited: #475569;
+      --color-answered: #10b981;
+      --color-unanswered: #ef4444;
+      --color-review: #f59e0b;
+      --color-review-answered: #8b5cf6;
+      
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+      --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.1);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Container Grid */
+    .app-container {
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      flex: 1;
+    }
+
+    /* Header Bar */
+    header {
+      background: var(--bg-surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-logo {
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+    }
+
+    .brand-title h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-title p {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .timer-section {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .timer-card {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 10px;
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #ef4444;
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+      animation: pulse 2s infinite;
+    }
+
+    .timer-card.normal {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-left: 1px solid var(--border-color);
+      padding-left: 1.5rem;
+    }
+
+    .avatar {
+      background: #1e293b;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+      color: var(--accent);
+    }
+
+    .user-info {
+      line-height: 1.3;
+    }
+
+    .user-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .user-id {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* Main Workspace Panels */
+    .main-workspace {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 1.5rem;
+      flex: 1;
+    }
+
+    /* Question Console Panel */
+    .question-panel {
+      background: var(--bg-surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .question-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .question-number-badge {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+
+    .marks-info {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .marks-badge {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .marks-badge.positive {
+      color: var(--color-answered);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .marks-badge.negative {
+      color: var(--color-unanswered);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .question-content {
+      padding: 2rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .question-text {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .option-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .option-card:hover {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: var(--border-focus);
+      transform: translateY(-2px);
+    }
+
+    .option-indicator {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background: rgba(255, 255, 255, 0.02);
+      transition: all var(--transition-fast);
+    }
+
+    .option-text {
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: var(--text-primary);
+    }
+
+    /* Selected state */
+    .option-card.selected {
+      background: rgba(99, 102, 241, 0.12);
+      border-color: var(--accent);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .option-card.selected .option-indicator {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Bottom Control Bar */
+    .control-bar {
+      padding: 1.25rem 1.5rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(13, 17, 23, 0.3);
+    }
+
+    .control-left, .control-right {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.65rem 1.25rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-secondary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+
+    .btn-warning {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.2);
+      color: var(--color-review);
+    }
+
+    .btn-warning:hover {
+      background: rgba(245, 158, 11, 0.2);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Right Navigation Deck */
+    .navigation-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .panel-card {
+      background: var(--bg-surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .questions-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+
+    .grid-btn {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-primary);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-fast);
+      position: relative;
+    }
+
+    .grid-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-focus);
+    }
+
+    /* Question States */
+    .grid-btn.unvisited {
+      background: #334155;
+      border-color: #475569;
+    }
+
+    .grid-btn.answered {
+      background: var(--color-answered);
+      border-color: var(--color-answered);
+      color: #fff;
+    }
+
+    .grid-btn.unanswered {
+      background: var(--color-unanswered);
+      border-color: var(--color-unanswered);
+      color: #fff;
+    }
+
+    .grid-btn.marked {
+      background: var(--color-review);
+      border-color: var(--color-review);
+      color: #fff;
+    }
+
+    .grid-btn.marked-answered {
+      background: var(--color-review-answered);
+      border-color: var(--color-review-answered);
+      color: #fff;
+    }
+
+    .grid-btn.active {
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+
+    /* Summary Legends */
+    .legends-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      font-size: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .legend-color.unvisited { background: #334155; }
+    .legend-color.answered { background: var(--color-answered); }
+    .legend-color.unanswered { background: var(--color-unanswered); }
+    .legend-color.marked { background: var(--color-review); }
+    .legend-color.marked-answered { background: var(--color-review-answered); }
+
+    /* Instructions / General Card */
+    .instruction-card {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .instruction-card p {
+      margin-bottom: 0.5rem;
+    }
+
+    .connection-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      margin-top: 1rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444; /* red by default */
+    }
+
+    .status-dot.online {
+      background: var(--color-answered);
+      box-shadow: 0 0 8px var(--color-answered);
+    }
+
+    /* Login Modal Overlay */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 7, 10, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--transition-normal);
+    }
+
+    .overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .login-modal {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      transform: scale(0.9);
+      transition: all var(--transition-normal);
+    }
+
+    .overlay.active .login-modal {
+      transform: scale(1);
+    }
+
+    .modal-logo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-title {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .modal-title h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+
+    .modal-title p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .form-input {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      transition: all var(--transition-fast);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.1);
+    }
+
+    .btn-block {
+      width: 100%;
+      justify-content: center;
+      padding: 0.8rem;
+      margin-top: 1rem;
+    }
+
+    /* Submit Confirmation Modal */
+    .submit-modal {
+      text-align: center;
+    }
+    
+    .submit-modal i {
+      font-size: 3rem;
+      color: var(--color-answered);
+      margin-bottom: 1rem;
+    }
+    
+    .submit-modal h2 {
+      margin-bottom: 0.5rem;
+    }
+    
+    .submit-modal p {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    .submit-grid-summary {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+      background: rgba(255,255,255,0.02);
+      padding: 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    .summary-stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .summary-stat-val {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .summary-stat-label {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+    }
+
+    /* Responsive Queries */
+    @media (max-width: 1024px) {
+      .main-workspace {
+        grid-template-columns: 1fr;
+      }
+      .navigation-panel {
+        grid-row: 1;
+      }
+      .questions-grid {
+        grid-template-columns: repeat(10, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app-container {
+        padding: 0.75rem;
+      }
+      header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+      .timer-section {
+        width: 100%;
+        justify-content: space-between;
+        border-top: 1px solid var(--border-color);
+        padding-top: 0.75rem;
+      }
+      .user-profile {
+        border: none;
+        padding-left: 0;
+      }
+      .questions-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+      .control-bar {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .control-left, .control-right {
+        width: 100%;
+      }
+      .control-left .btn, .control-right .btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header>
+      <div class="brand-section">
+        <div class="brand-logo">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div class="brand-title">
+          <h1 id="test-title">CBSE Class 12 Physics Test</h1>
+          <p>Computer-Based Test Platform - Class 12 Physics</p>
+        </div>
+      </div>
+      
+      <div class="timer-section">
+        <div id="timer-display" class="timer-card normal">
+          <i class="fa-regular fa-clock"></i>
+          <span id="time-left">30:00</span>
+        </div>
+        
+        <div class="user-profile">
+          <div class="avatar">
+            <i class="fa-regular fa-user"></i>
+          </div>
+          <div class="user-info">
+            <div id="display-student-name" class="user-name">Guest Student</div>
+            <div id="display-student-id" class="user-id">ID: STU_UNKNOWN</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="main-workspace">
+      
+      <!-- Left Panel: Active Question Panel -->
+      <section class="question-panel">
+        <div class="question-header">
+          <div class="question-number-badge" id="current-q-label">Question 1 of 5</div>
+          <div class="marks-info">
+            <span class="marks-badge positive">+4 Marks</span>
+            <span class="marks-badge negative">-1 Mark</span>
+          </div>
+        </div>
+
+        <div class="question-content">
+          <!-- Question Description -->
+          <div class="question-text" id="question-text">
+            Loading question description...
+          </div>
+
+          <!-- Multiple-Choice Answers -->
+          <div class="options-list" id="options-list">
+            <!-- Dynamically populated options -->
+          </div>
+        </div>
+
+        <!-- Action Control Buttons -->
+        <div class="control-bar">
+          <div class="control-left">
+            <button class="btn btn-secondary" id="btn-prev" disabled>
+              <i class="fa-solid fa-chevron-left"></i> Previous
+            </button>
+            <button class="btn btn-secondary" id="btn-clear">
+              Clear Response
+            </button>
+          </div>
+          <div class="control-right">
+            <button class="btn btn-warning" id="btn-mark">
+              <i class="fa-regular fa-bookmark"></i> Mark for Review
+            </button>
+            <button class="btn btn-primary" id="btn-save-next">
+              Save & Next <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel: Navigation and Information -->
+      <aside class="navigation-panel">
+        
+        <!-- Palette Panel -->
+        <div class="panel-card">
+          <div class="panel-title">
+            <i class="fa-solid fa-table-cells-large"></i> Question Palette
+          </div>
+          
+          <div class="questions-grid" id="questions-grid">
+            <!-- Grid of buttons will be loaded here -->
+          </div>
+
+          <div class="legends-section">
+            <div class="legend-item">
+              <div class="legend-color unvisited"></div>
+              <span>Not Visited</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color unanswered"></div>
+              <span>Not Answered</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color answered"></div>
+              <span>Answered</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color marked"></div>
+              <span>Marked Review</span>
+            </div>
+            <div class="legend-item" style="grid-column: span 2;">
+              <div class="legend-color marked-answered"></div>
+              <span>Marked & Answered</span>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-block" id="btn-submit-test" style="margin-top: 1.5rem; background: linear-gradient(135deg, #10b981, #059669); border:none;">
+            <i class="fa-solid fa-paper-plane"></i> Submit Examination
+          </button>
+        </div>
+
+        <!-- Instructions Info Card -->
+        <div class="panel-card">
+          <div class="panel-title">
+            <i class="fa-solid fa-circle-info"></i> Information
+          </div>
+          <div class="instruction-card">
+            <p><strong>Instructions:</strong></p>
+            <p>1. Double check your selected option before clicking "Save & Next".</p>
+            <p>2. Responses are saved instantly to Firestore.</p>
+            <p>3. Keep track of the countdown timer on the top panel.</p>
+            <div class="connection-status">
+              <div class="status-dot" id="db-status-dot"></div>
+              <span id="db-status-text">Connecting to Firebase...</span>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+
+  <!-- Registration / Login Dialog Overlay -->
+  <div class="overlay active" id="login-overlay">
+    <div class="login-modal">
+      <div class="modal-logo">
+        <div class="brand-logo" style="width: 50px; height: 50px; border-radius: 12px; font-size: 1.5rem;">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+      </div>
+      <div class="modal-title">
+        <h2>Class 12 Physics</h2>
+        <p>Please enter your credentials to begin the Mock Test.</p>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="student-name">Full Name</label>
+          <input type="text" id="student-name" class="form-input" placeholder="e.g. Rahul Kumar" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="student-id">Student Roll Number / ID</label>
+          <input type="text" id="student-id" class="form-input" placeholder="e.g. CBSE12-PHY-042" required>
+        </div>
+        <div class="form-group">
+          <label for="student-location">Current Location (City)</label>
+          <input type="text" id="student-location" class="form-input" placeholder="e.g. Kolkata" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block">
+          <i class="fa-solid fa-right-to-bracket"></i> Authenticate & Start Test
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Submit Confirmation Dialog Overlay -->
+  <div class="overlay" id="submit-overlay">
+    <div class="login-modal submit-modal">
+      <i class="fa-solid fa-circle-check"></i>
+      <h2>Confirm Submission</h2>
+      <p>Are you sure you want to end the test? You will not be able to change your answers after submission.</p>
+      
+      <div class="submit-grid-summary">
+        <div class="summary-stat-item">
+          <span class="summary-stat-val" id="sum-answered" style="color:var(--color-answered);">0</span>
+          <span class="summary-stat-label">Answered</span>
+        </div>
+        <div class="summary-stat-item">
+          <span class="summary-stat-val" id="sum-unanswered" style="color:var(--color-unanswered);">0</span>
+          <span class="summary-stat-label">Unanswered</span>
+        </div>
+        <div class="summary-stat-item">
+          <span class="summary-stat-val" id="sum-marked" style="color:var(--color-review);">0</span>
+          <span class="summary-stat-label">Marked</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:1rem;">
+        <button class="btn btn-secondary" id="btn-cancel-submit" style="flex:1; justify-content:center;">
+          Go Back
+        </button>
+        <button class="btn btn-primary" id="btn-confirm-submit" style="flex:1; justify-content:center; background:var(--color-answered); border-color:var(--color-answered);">
+          Confirm Submit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test Completed Success Screen -->
+  <div class="overlay" id="completed-overlay">
+    <div class="login-modal submit-modal" style="max-width: 500px;">
+      <div style="background: rgba(16, 185, 129, 0.1); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+        <i class="fa-solid fa-award" style="color: var(--color-answered); font-size: 2.5rem; margin-bottom: 0;"></i>
+      </div>
+      <h2>Test Submitted Successfully!</h2>
+      <p>Thank you for taking the Class 12 Physics Mock Test. Your responses have been securely saved to the Cloud Database.</p>
+      
+      <div style="background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-color); text-align: left; margin-bottom: 1.5rem;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.9rem;">
+          <span style="color:var(--text-secondary)">Candidate Name:</span>
+          <span id="final-name" style="font-weight:600"> - </span>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.9rem;">
+          <span style="color:var(--text-secondary)">Student ID:</span>
+          <span id="final-id" style="font-weight:600"> - </span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+          <span style="color:var(--text-secondary)">Total Questions Answered:</span>
+          <span id="final-answered" style="color:var(--color-answered); font-weight:600"> 0 / 5</span>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary btn-block" onclick="window.location.reload();">
+        <i class="fa-solid fa-rotate-right"></i> Restart Test Session
+      </button>
+    </div>
+  </div>
+
+  <!-- Firebase Integration Script -->
+  <script type="module">
+    import { db } from "./firebase-config.js";
+    import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const classId = "class12";
+
+    // Class 12 mock test questions
+    const questions = [
+      {
+        id: "c12_q1",
+        text: "What is the direction of the electric field vector with respect to an equipotential surface?",
+        options: [
+          "Parallel to the surface at all points",
+          "Perpendicular to the surface at all points",
+          "At a constant angle of 45 degrees to the surface",
+          "Directly opposite to the surface boundaries"
+        ],
+        correctIndex: 1
+      },
+      {
+        id: "c12_q2",
+        text: "The electrical resistivity of a metallic wire conductor depends primarily on which of the following physical factors?",
+        options: [
+          "Length of the conductor",
+          "Area of cross-section of the conductor",
+          "External shape of the conductor",
+          "Nature of the material and its temperature"
+        ],
+        correctIndex: 3
+      },
+      {
+        id: "c12_q3",
+        text: "The magnetic susceptibility (χm) of a diamagnetic substance is characterized as being:",
+        options: [
+          "Small and positive",
+          "Large and positive",
+          "Small and negative",
+          "Exactly zero"
+        ],
+        correctIndex: 2
+      },
+      {
+        id: "c12_q4",
+        text: "Lenz's law in electromagnetic induction is a direct mathematical consequence of the law of conservation of:",
+        options: [
+          "Electric Charge",
+          "Mass",
+          "Energy",
+          "Linear Momentum"
+        ],
+        correctIndex: 2
+      },
+      {
+        id: "c12_q5",
+        text: "In a Young's double-slit wave interference experiment, if the distance between the two coherent slits is halved, the fringe width becomes:",
+        options: [
+          "Halved",
+          "Doubled",
+          "Four times greater",
+          "Unchanged"
+        ],
+        correctIndex: 1
+      }
+    ];
+
+    // State Variables
+    let currentIdx = 0;
+    let student = { name: "", id: "", location: "" };
+    
+    const studentAnswers = {};
+    for (let i = 0; i < questions.length; i++) {
+      studentAnswers[i] = { selectedOption: null, status: "unvisited" };
+    }
+
+    let timeLeft = 30 * 60; 
+    let timerInterval = null;
+
+    // DOM Elements
+    const loginOverlay = document.getElementById("login-overlay");
+    const loginForm = document.getElementById("login-form");
+    const displayStudentName = document.getElementById("display-student-name");
+    const displayStudentId = document.getElementById("display-student-id");
+    
+    const questionText = document.getElementById("question-text");
+    const optionsList = document.getElementById("options-list");
+    const currentQLabel = document.getElementById("current-q-label");
+    const questionsGrid = document.getElementById("questions-grid");
+    
+    const btnPrev = document.getElementById("btn-prev");
+    const btnClear = document.getElementById("btn-clear");
+    const btnMark = document.getElementById("btn-mark");
+    const btnSaveNext = document.getElementById("btn-save-next");
+    const btnSubmitTest = document.getElementById("btn-submit-test");
+    
+    const submitOverlay = document.getElementById("submit-overlay");
+    const btnCancelSubmit = document.getElementById("btn-cancel-submit");
+    const btnConfirmSubmit = document.getElementById("btn-confirm-submit");
+    
+    const completedOverlay = document.getElementById("completed-overlay");
+    
+    const dbStatusDot = document.getElementById("db-status-dot");
+    const dbStatusText = document.getElementById("db-status-text");
+
+    function checkFirebaseConnection() {
+      if (db) {
+        dbStatusDot.classList.add("online");
+        dbStatusText.textContent = "Connected to Firebase Firestore";
+      } else {
+        dbStatusDot.classList.remove("online");
+        dbStatusText.textContent = "Firebase Configuration Pending";
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      checkFirebaseConnection();
+      renderPaletteGrid();
+      sessionStorage.clear();
+    });
+
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      student.name = document.getElementById("student-name").value.trim();
+      student.id = document.getElementById("student-id").value.trim().toUpperCase().replace(/\s+/g, "-");
+      student.location = document.getElementById("student-location").value.trim();
+
+      if (!student.name || !student.id || !student.location) return;
+
+      displayStudentName.textContent = student.name;
+      displayStudentId.textContent = `ID: ${student.id} (${student.location})`;
+      loginOverlay.classList.remove("active");
+
+      studentAnswers[0].status = "unanswered";
+      loadQuestion(0);
+      startTimer();
+      saveActiveSession();
+    });
+
+    function startTimer() {
+      const timerDisplay = document.getElementById("timer-display");
+      const timeLeftText = document.getElementById("time-left");
+      
+      timerInterval = setInterval(() => {
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          autoSubmitTest();
+          return;
+        }
+        
+        timeLeft--;
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        timeLeftText.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        
+        if (timeLeft <= 300) {
+          timerDisplay.classList.remove("normal");
+        }
+      }, 1000);
+    }
+
+    async function saveActiveSession() {
+      try {
+        const sessionRef = doc(db, "student_responses", `${classId}_${student.id}_metadata`);
+        await setDoc(sessionRef, {
+          classId: classId,
+          studentId: student.id,
+          studentName: student.name,
+          location: student.location,
+          joinedAt: new Date().toISOString(),
+          status: "active",
+          lastActiveQuestion: 1
+        });
+      } catch (err) {
+        console.error("Firestore Error starting active session: ", err);
+      }
+    }
+
+    function renderPaletteGrid() {
+      questionsGrid.innerHTML = "";
+      for (let i = 0; i < questions.length; i++) {
+        const btn = document.createElement("button");
+        btn.className = "grid-btn unvisited";
+        btn.textContent = i + 1;
+        btn.id = `palette-btn-${i}`;
+        
+        btn.addEventListener("click", () => {
+          if (loginOverlay.classList.contains("active")) return;
+          if (studentAnswers[currentIdx].status === "unvisited") {
+            studentAnswers[currentIdx].status = "unanswered";
+          }
+          saveAndNavigate(i);
+        });
+        
+        questionsGrid.appendChild(btn);
+      }
+    }
+
+    function updatePaletteUI() {
+      for (let i = 0; i < questions.length; i++) {
+        const btn = document.getElementById(`palette-btn-${i}`);
+        if (!btn) continue;
+        btn.className = "grid-btn";
+        if (i === currentIdx) {
+          btn.classList.add("active");
+        }
+        btn.classList.add(studentAnswers[i].status);
+      }
+    }
+
+    function loadQuestion(index) {
+      currentIdx = index;
+      const question = questions[index];
+      
+      currentQLabel.textContent = `Question ${index + 1} of ${questions.length}`;
+      questionText.textContent = question.text;
+      
+      optionsList.innerHTML = "";
+      const selectedChoice = studentAnswers[index].selectedOption;
+      
+      const optionLetters = ["A", "B", "C", "D"];
+      question.options.forEach((optText, oIdx) => {
+        const letter = optionLetters[oIdx];
+        const card = document.createElement("div");
+        card.className = "option-card";
+        if (selectedChoice === letter) {
+          card.classList.add("selected");
+        }
+        
+        card.innerHTML = `
+          <div class="option-indicator">${letter}</div>
+          <div class="option-text">${optText}</div>
+        `;
+        
+        card.addEventListener("click", () => {
+          selectOption(letter);
+        });
+        
+        optionsList.appendChild(card);
+      });
+      
+      btnPrev.disabled = (index === 0);
+      
+      if (index === questions.length - 1) {
+        btnSaveNext.innerHTML = `Save & Preview <i class="fa-solid fa-flag-checkered"></i>`;
+      } else {
+        btnSaveNext.innerHTML = `Save & Next <i class="fa-solid fa-chevron-right"></i>`;
+      }
+      
+      updatePaletteUI();
+    }
+
+    function selectOption(letter) {
+      studentAnswers[currentIdx].selectedOption = letter;
+      
+      const cards = optionsList.querySelectorAll(".option-card");
+      const optionLetters = ["A", "B", "C", "D"];
+      cards.forEach((card, oIdx) => {
+        if (optionLetters[oIdx] === letter) {
+          card.classList.add("selected");
+        } else {
+          card.classList.remove("selected");
+        }
+      });
+      
+      saveOptionToFirestore(currentIdx, letter);
+    }
+
+    async function saveOptionToFirestore(qIdx, selectedLetter) {
+      if (!student.id) return;
+      
+      let qStatus = "answered";
+      if (studentAnswers[qIdx].status === "marked" || studentAnswers[qIdx].status === "marked-answered") {
+        qStatus = "marked-answered";
+      }
+      
+      studentAnswers[qIdx].status = qStatus;
+      updatePaletteUI();
+
+      try {
+        const responseId = `${classId}_${student.id}_q${qIdx}`;
+        const responseRef = doc(db, "student_responses", responseId);
+        
+        await setDoc(responseRef, {
+          classId: classId,
+          studentId: student.id,
+          studentName: student.name,
+          location: student.location,
+          questionIndex: qIdx,
+          selectedOption: selectedLetter,
+          status: qStatus,
+          timestamp: new Date().toISOString()
+        });
+        
+        await setDoc(doc(db, "student_responses", `${classId}_${student.id}_metadata`), {
+          lastActiveQuestion: qIdx + 1,
+          lastActiveTime: new Date().toISOString()
+        }, { merge: true });
+        
+      } catch (err) {
+        console.error("Firestore Write Error: ", err);
+      }
+    }
+
+    btnClear.addEventListener("click", async () => {
+      studentAnswers[currentIdx].selectedOption = null;
+      
+      const cards = optionsList.querySelectorAll(".option-card");
+      cards.forEach(card => card.classList.remove("selected"));
+      
+      if (studentAnswers[currentIdx].status === "marked-answered") {
+        studentAnswers[currentIdx].status = "marked";
+      } else {
+        studentAnswers[currentIdx].status = "unanswered";
+      }
+      
+      updatePaletteUI();
+      
+      try {
+        const responseId = `${classId}_${student.id}_q${currentIdx}`;
+        const responseRef = doc(db, "student_responses", responseId);
+        
+        await setDoc(responseRef, {
+          classId: classId,
+          studentId: student.id,
+          studentName: student.name,
+          location: student.location,
+          questionIndex: currentIdx,
+          selectedOption: null,
+          status: studentAnswers[currentIdx].status,
+          timestamp: new Date().toISOString()
+        });
+      } catch (err) {
+        console.error("Firestore Clear Response Error: ", err);
+      }
+    });
+
+    btnMark.addEventListener("click", async () => {
+      const selected = studentAnswers[currentIdx].selectedOption;
+      let newStatus = "marked";
+      
+      if (selected !== null) {
+        newStatus = "marked-answered";
+      }
+      
+      studentAnswers[currentIdx].status = newStatus;
+      updatePaletteUI();
+      
+      try {
+        const responseId = `${classId}_${student.id}_q${currentIdx}`;
+        const responseRef = doc(db, "student_responses", responseId);
+        
+        await setDoc(responseRef, {
+          classId: classId,
+          studentId: student.id,
+          studentName: student.name,
+          location: student.location,
+          questionIndex: currentIdx,
+          selectedOption: selected,
+          status: newStatus,
+          timestamp: new Date().toISOString()
+        });
+      } catch (err) {
+        console.error("Firestore Mark Review Error: ", err);
+      }
+      
+      if (currentIdx < questions.length - 1) {
+        loadQuestion(currentIdx + 1);
+      }
+    });
+
+    function saveAndNavigate(targetIndex) {
+      const currentSelected = studentAnswers[currentIdx].selectedOption;
+      
+      if (currentSelected !== null) {
+        if (studentAnswers[currentIdx].status !== "marked-answered") {
+          studentAnswers[currentIdx].status = "answered";
+        }
+      } else {
+        if (studentAnswers[currentIdx].status !== "marked") {
+          studentAnswers[currentIdx].status = "unanswered";
+        }
+      }
+      
+      loadQuestion(targetIndex);
+    }
+
+    btnSaveNext.addEventListener("click", () => {
+      if (currentIdx < questions.length - 1) {
+        saveAndNavigate(currentIdx + 1);
+      } else {
+        saveAndNavigate(currentIdx);
+        triggerSubmitOverlay();
+      }
+    });
+
+    btnPrev.addEventListener("click", () => {
+      if (currentIdx > 0) {
+        saveAndNavigate(currentIdx - 1);
+      }
+    });
+
+    function getSummaryStats() {
+      let answered = 0;
+      let unanswered = 0;
+      let marked = 0;
+      
+      for (let i = 0; i < questions.length; i++) {
+        const qState = studentAnswers[i].status;
+        if (qState === "answered" || qState === "marked-answered") {
+          answered++;
+        }
+        if (qState === "unanswered" || qState === "unvisited") {
+          unanswered++;
+        }
+        if (qState === "marked" || qState === "marked-answered") {
+          marked++;
+        }
+      }
+      
+      return { answered, unanswered, marked };
+    }
+
+    function triggerSubmitOverlay() {
+      const stats = getSummaryStats();
+      document.getElementById("sum-answered").textContent = stats.answered;
+      document.getElementById("sum-unanswered").textContent = stats.unanswered;
+      document.getElementById("sum-marked").textContent = stats.marked;
+      
+      submitOverlay.classList.add("active");
+    }
+
+    btnSubmitTest.addEventListener("click", () => {
+      triggerSubmitOverlay();
+    });
+
+    btnCancelSubmit.addEventListener("click", () => {
+      submitOverlay.classList.remove("active");
+    });
+
+    btnConfirmSubmit.addEventListener("click", async () => {
+      submitOverlay.classList.remove("active");
+      await executeSubmitTest();
+    });
+
+    async function autoSubmitTest() {
+      alert("Time is up! Your mock test is being submitted automatically.");
+      await executeSubmitTest();
+    }
+
+    async function executeSubmitTest() {
+      clearInterval(timerInterval);
+      
+      try {
+        await setDoc(doc(db, "student_responses", `${classId}_${student.id}_metadata`), {
+          status: "submitted",
+          submittedAt: new Date().toISOString(),
+          scorePreview: calculateScore()
+        }, { merge: true });
+      } catch (err) {
+        console.error("Firestore Final Submit Error: ", err);
+      }
+
+      const stats = getSummaryStats();
+      document.getElementById("final-name").textContent = student.name;
+      document.getElementById("final-id").textContent = `${student.id} (${student.location})`;
+      document.getElementById("final-answered").textContent = `${stats.answered} / ${questions.length}`;
+      
+      completedOverlay.classList.add("active");
+    }
+
+    function calculateScore() {
+      let score = 0;
+      for (let i = 0; i < questions.length; i++) {
+        const choice = studentAnswers[i].selectedOption;
+        const correctLetter = ["A", "B", "C", "D"][questions[i].correctIndex];
+        if (choice === correctLetter) {
+          score += 4;
+        } else if (choice !== null) {
+          score -= 1;
+        }
+      }
+      return score;
+    }
+  </script>
+</body>
+</html>
