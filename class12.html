@@ -1110,8 +1110,8 @@
       sessionStorage.clear();
     });
 
-    loginForm.addEventListener("submit", (e) => {
-      e.preventDefault();
+    loginForm.addEventListener("submit", (event) => {
+      event.preventDefault();
       student.name = document.getElementById("student-name").value.trim();
       student.id = document.getElementById("student-id").value.trim().toUpperCase().replace(/\s+/g, "-");
       student.location = document.getElementById("student-location").value.trim();
