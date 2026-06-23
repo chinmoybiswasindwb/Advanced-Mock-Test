@@ -906,7 +906,7 @@
         <p>Please enter your credentials to begin the Mock Test.</p>
       </div>
 
-      <form id="login-form">
+      <div id="login-form-container">
         <div class="form-group">
           <label for="student-name">Full Name</label>
           <input type="text" id="student-name" class="form-input" placeholder="e.g. Rahul Kumar" required autocomplete="name">
@@ -920,10 +920,10 @@
           <input type="text" id="student-location" class="form-input" placeholder="e.g. Kolkata" required>
         </div>
         
-        <button type="submit" class="btn btn-primary btn-block">
+        <button type="button" id="login-btn" class="btn btn-primary btn-block">
           <i class="fa-solid fa-right-to-bracket"></i> Authenticate & Start Test
         </button>
-      </form>
+      </div>
     </div>
   </div>
 
@@ -1214,7 +1214,7 @@
 
     // DOM Elements
     const loginOverlay = document.getElementById("login-overlay");
-    const loginForm = document.getElementById("login-form");
+    const loginBtn = document.getElementById("login-btn");
     const displayStudentName = document.getElementById("display-student-name");
     const displayStudentId = document.getElementById("display-student-id");
     
@@ -1249,13 +1249,15 @@
       sessionStorage.clear();
     });
 
-    loginForm.addEventListener("submit", (event) => {
-      event.preventDefault();
+    loginBtn.addEventListener("click", () => {
       student.name = document.getElementById("student-name").value.trim();
       student.id = document.getElementById("student-id").value.trim().toUpperCase().replace(/\s+/g, "-");
       student.location = document.getElementById("student-location").value.trim();
 
-      if (!student.name || !student.id || !student.location) return;
+      if (!student.name || !student.id || !student.location) {
+        alert("Please fill in all the required fields.");
+        return;
+      }
 
       displayStudentName.textContent = student.name;
       displayStudentId.textContent = `ID: ${student.id} (${student.location})`;
