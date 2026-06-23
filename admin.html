@@ -590,6 +590,17 @@
           <span id="db-status-text" style="color:var(--text-secondary)">Connecting...</span>
         </div>
         
+        <select id="class-filter" class="form-input" style="padding: 0.5rem 1rem; background: rgba(30, 41, 59, 0.6); border-radius: 10px; font-size: 0.85rem; margin-right: 1rem; color: #fff; border: 1px solid var(--border-color); font-family: 'Outfit', sans-serif; cursor: pointer; transition: all var(--transition-fast);">
+          <option value="all">All Batches</option>
+          <option value="physics">Class 12 Physics (Original)</option>
+          <option value="class7">Class 7 (Math/Science)</option>
+          <option value="class8">Class 8 (Math/Science)</option>
+          <option value="class9">Class 9 (Math/Science)</option>
+          <option value="class10">Class 10 (CBSE)</option>
+          <option value="class11">Class 11 (Physics/Math)</option>
+          <option value="class12">Class 12 Physics (CBSE)</option>
+        </select>
+        
         <button class="btn btn-danger" id="btn-clear-session">
           <i class="fa-solid fa-trash-can"></i> Clear All Data
         </button>
@@ -691,7 +702,7 @@
 
     // Application State
     const sessionData = {
-      students: {}, // studentId -> { metadata, answers: { qIdx -> { selectedOption, status, timestamp } } }
+      students: {}, // uniqueStudentKey ("classId_studentId") -> { metadata, answers: { qIdx -> { selectedOption, status, timestamp } } }
       totalAnswersCount: 0
     };
 
@@ -706,6 +717,7 @@
     const studentsGridContainer = document.getElementById("students-grid-container");
     const studentsEmpty = document.getElementById("students-empty");
     const btnClearSession = document.getElementById("btn-clear-session");
+    const classFilter = document.getElementById("class-filter");
 
     // Stats Elements
     const statActiveCount = document.getElementById("stat-active-count");
@@ -723,6 +735,25 @@
       dbStatusText.textContent = "Pending Config";
     }
 
+    // Filter event listener
+    classFilter.addEventListener("change", () => {
+      updateStatsAndDashboard();
+      
+      // Clear feed and show placeholder to let filtered logs flow in fresh
+      feedContainer.innerHTML = "";
+      // Re-trigger feed-empty check
+      const selectedClass = classFilter.value;
+      let hasFeedItems = false;
+      
+      // We don't reconstruct full history in the feed, just wait for new live edits for this class
+      feedContainer.innerHTML = `
+        <div class="empty-state" style="padding:2rem 1rem; border:none;" id="feed-empty">
+          <i class="fa-solid fa-list-check"></i>
+          <p style="font-size:0.85rem;">Showing feed logs for batch: <strong>${selectedClass.toUpperCase()}</strong>.</p>
+        </div>
+      `;
+    });
+
     // Initialize Firestore real-time collection observer
     function initializeRealtimeListener() {
       try {
@@ -733,65 +764,67 @@
             const data = change.doc.data();
             const changeType = change.type;
 
+            // Deduce classId and studentId
+            const classId = data.classId || "physics";
+            const sId = data.studentId;
+            
+            if (!sId) return; // skip malformed documents
+            
+            const uniqueStudentKey = `${classId}_${sId}`;
+
             if (docId.endsWith("_metadata")) {
               // Handle Student Session Metadata document
-              const sId = data.studentId;
-              
               if (changeType === "removed") {
-                if (sessionData.students[sId]) {
-                  delete sessionData.students[sId];
+                if (sessionData.students[uniqueStudentKey]) {
+                  delete sessionData.students[uniqueStudentKey];
                 }
               } else {
                 // added or modified
-                if (!sessionData.students[sId]) {
-                  sessionData.students[sId] = { metadata: data, answers: {} };
+                if (!sessionData.students[uniqueStudentKey]) {
+                  sessionData.students[uniqueStudentKey] = { metadata: { ...data, classId }, answers: {} };
                 } else {
-                  sessionData.students[sId].metadata = data;
+                  sessionData.students[uniqueStudentKey].metadata = { ...data, classId };
                 }
                 
                 // Real-time flash notification for updates
                 if (!isInitialLoad) {
-                  logActivity(data, "metadata", changeType);
+                  logActivity({ ...data, classId }, "metadata", changeType);
                 }
               }
 
             } else if (docId.includes("_q")) {
               // Handle Question Answer response document
-              const sId = data.studentId;
               const qIdx = data.questionIndex;
 
               if (changeType === "removed") {
-                if (sessionData.students[sId] && sessionData.students[sId].answers[qIdx]) {
-                  delete sessionData.students[sId].answers[qIdx];
+                if (sessionData.students[uniqueStudentKey] && sessionData.students[uniqueStudentKey].answers[qIdx]) {
+                  delete sessionData.students[uniqueStudentKey].answers[qIdx];
                 }
               } else {
                 // added or modified
-                // Ensure student container exists (fallback if answers arrive before metadata)
-                if (!sessionData.students[sId]) {
-                  sessionData.students[sId] = { 
-                    metadata: { studentId: sId, studentName: data.studentName || "Guest", location: data.location || "Unknown", status: "active" }, 
+                if (!sessionData.students[uniqueStudentKey]) {
+                  sessionData.students[uniqueStudentKey] = { 
+                    metadata: { classId, studentId: sId, studentName: data.studentName || "Guest", location: data.location || "Unknown", status: "active" }, 
                     answers: {} 
                   };
                 }
                 
-                const oldAnswer = sessionData.students[sId].answers[qIdx];
-                sessionData.students[sId].answers[qIdx] = data;
+                const oldAnswer = sessionData.students[uniqueStudentKey].answers[qIdx];
+                sessionData.students[uniqueStudentKey].answers[qIdx] = data;
 
                 // Log response update
                 if (!isInitialLoad) {
-                  // Only log if it represents an actual new action (not a duplicate event trigger)
                   if (!oldAnswer || oldAnswer.selectedOption !== data.selectedOption || oldAnswer.status !== data.status) {
-                    logActivity(data, "answer", changeType);
+                    logActivity({ ...data, classId }, "answer", changeType);
                   }
                 }
               }
             }
           });
 
-          // After processing docChanges in this batch, rebuild dashboard representation
+          // Rebuild dashboard representation after batch processing
           updateStatsAndDashboard();
           
-          // Flip initial load flag to false after processing the first full snapshot
           isInitialLoad = false;
         }, (err) => {
           console.error("Firestore Listener error: ", err);
@@ -804,12 +837,23 @@
 
     // Log Activity Feed Entry
     function logActivity(data, type, changeType) {
-      if (feedEmpty) feedEmpty.style.display = "none";
+      const classId = data.classId || "physics";
+      const selectedClass = classFilter.value;
+      
+      // Filter log items based on dropdown selection
+      if (selectedClass !== "all" && classId !== selectedClass) {
+        return; // skip logs from other classes
+      }
+      
+      // Hide empty placeholder
+      const emptyPlaceholder = document.getElementById("feed-empty");
+      if (emptyPlaceholder) emptyPlaceholder.style.display = "none";
       
       const item = document.createElement("div");
       item.className = "feed-item";
       
       const timeStr = new Date().toLocaleTimeString();
+      const classBadge = classId.toUpperCase();
       
       if (type === "metadata") {
         if (data.status === "submitted") {
@@ -817,10 +861,10 @@
           item.innerHTML = `
             <div class="feed-item-header">
               <span class="feed-timestamp">${timeStr}</span>
-              <span style="color:var(--color-answered); font-weight:700">SUBMITTED</span>
+              <span style="color:var(--color-answered); font-weight:700">[${classBadge}] SUBMITTED</span>
             </div>
             <div class="feed-item-body">
-              🎓 <strong>${data.studentName}</strong> (${data.location}) has submitted their exam paper! (Score: ${data.scorePreview !== undefined ? data.scorePreview : 'Pending'})
+              🎓 <strong>${data.studentName}</strong> (${data.location}) submitted paper! Score: <strong>${data.scorePreview !== undefined ? data.scorePreview : 'Pending'}</strong>
             </div>
           `;
         } else {
@@ -828,10 +872,10 @@
           item.innerHTML = `
             <div class="feed-item-header">
               <span class="feed-timestamp">${timeStr}</span>
-              <span style="color:var(--accent)">NEW SESSION</span>
+              <span style="color:var(--accent)">[${classBadge}] NEW SESSION</span>
             </div>
             <div class="feed-item-body">
-              ⚡ <strong>${data.studentName}</strong> (${data.location}) entered the mock test room.
+              ⚡ <strong>${data.studentName}</strong> (${data.location}) entered the test room.
             </div>
           `;
         }
@@ -844,7 +888,7 @@
           item.innerHTML = `
             <div class="feed-item-header">
               <span class="feed-timestamp">${timeStr}</span>
-              <span style="color:var(--color-unanswered)">CLEARED</span>
+              <span style="color:var(--color-unanswered)">[${classBadge}] CLEARED</span>
             </div>
             <div class="feed-item-body">
               ↩️ <strong>${data.studentName}</strong> cleared choice for <strong>Question ${qNum}</strong>.
@@ -861,7 +905,7 @@
           item.innerHTML = `
             <div class="feed-item-header">
               <span class="feed-timestamp">${timeStr}</span>
-              <span style="color:${actionColor}">OPTION CLICK</span>
+              <span style="color:${actionColor}">[${classBadge}] ANSWER CLICK</span>
             </div>
             <div class="feed-item-body">
               ✏️ <strong>${data.studentName}</strong> ${actionLabel} <strong>Option ${option}</strong> for <strong>Question ${qNum}</strong>.
@@ -881,9 +925,16 @@
 
     // Refresh dashboard stats and grid cards
     function updateStatsAndDashboard() {
-      const studentIds = Object.keys(sessionData.students);
+      const selectedClass = classFilter.value;
+      const studentKeys = Object.keys(sessionData.students);
       
-      if (studentIds.length === 0) {
+      // Filter student keys
+      const filteredKeys = studentKeys.filter(key => {
+        const student = sessionData.students[key];
+        return selectedClass === "all" || student.metadata.classId === selectedClass;
+      });
+      
+      if (filteredKeys.length === 0) {
         studentsEmpty.style.display = "flex";
         studentsGridContainer.innerHTML = "";
         statActiveCount.textContent = "0";
@@ -899,10 +950,10 @@
       let activeCount = 0;
       let submittedCount = 0;
       let totalAnswers = 0;
-      let totalQuestionsTarget = studentIds.length * 10; // 10 questions per candidate
+      let totalQuestionsTarget = 0;
       
-      studentIds.forEach((sId) => {
-        const student = sessionData.students[sId];
+      filteredKeys.forEach((key) => {
+        const student = sessionData.students[key];
         const meta = student.metadata;
         const answers = student.answers;
 
@@ -922,6 +973,10 @@
           }
         });
 
+        // Determine question count (Physics = 10, others = 5)
+        const qCount = (meta.classId === "physics") ? 10 : 5;
+        totalQuestionsTarget += qCount;
+
         // Create student card UI
         const card = document.createElement("div");
         card.className = "student-card";
@@ -935,7 +990,7 @@
         
         // Build mini progress grid
         let miniGridHtml = "";
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < qCount; i++) {
           const ans = answers[i];
           let qClass = "unvisited";
           let letterDisp = "-";
@@ -960,19 +1015,19 @@
         card.innerHTML = `
           <div class="student-card-header">
             <div class="student-details">
-              <span class="student-name">${meta.studentName}</span>
+              <span class="student-name">${meta.studentName} <span style="font-size:0.7rem; color:var(--accent); font-weight:500;">(${meta.classId.toUpperCase()})</span></span>
               <span class="student-id">ID: ${meta.studentId}</span>
               <span class="student-location"><i class="fa-solid fa-location-dot"></i> ${meta.location}</span>
             </div>
             <span class="student-badge ${badgeClass}">${badgeLabel}</span>
           </div>
           
-          <div class="mini-palette">
+          <div class="mini-palette" style="grid-template-columns: repeat(${qCount === 10 ? 5 : 5}, 1fr);">
             ${miniGridHtml}
           </div>
 
           <div class="card-footer">
-            <span>Answered: <strong>${answeredCount} / 10</strong></span>
+            <span>Answered: <strong>${answeredCount} / ${qCount}</strong></span>
             <span>${scoreText}</span>
           </div>
         `;
