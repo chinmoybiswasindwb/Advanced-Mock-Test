@@ -973,12 +973,12 @@
           }
         });
 
-        // Determine question count (Physics = 10, Class 10 = 8, others = 5)
+        // Determine question count (Physics = 10, Class 10 = 12, others = 5)
         let qCount = 5;
         if (meta.classId === "physics") {
           qCount = 10;
         } else if (meta.classId === "class10") {
-          qCount = 8;
+          qCount = 12;
         }
         totalQuestionsTarget += qCount;
 
