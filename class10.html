@@ -963,11 +963,17 @@
   <!-- Test Completed Success Screen -->
   <div class="overlay" id="completed-overlay">
     <div class="login-modal submit-modal" style="max-width: 500px;">
-      <div style="background: rgba(16, 185, 129, 0.1); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+      <!-- Success Icon -->
+      <div id="submit-success-icon" style="background: rgba(16, 185, 129, 0.1); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
         <i class="fa-solid fa-circle-check" style="color: var(--color-answered); font-size: 2.5rem; margin-bottom: 0;"></i>
       </div>
-      <h2>Test Complete!</h2>
-      <p style="margin-bottom: 1rem; font-size: 0.95rem; color: var(--text-secondary);">Please download/copy your exam token and send it to your teacher.</p>
+      <!-- Error Icon (Hidden by default) -->
+      <div id="submit-error-icon" style="background: rgba(239, 68, 68, 0.1); width: 80px; height: 80px; border-radius: 50%; display: none; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+        <i class="fa-solid fa-triangle-exclamation" style="color: var(--color-unanswered); font-size: 2.5rem; margin-bottom: 0;"></i>
+      </div>
+
+      <h2 id="submit-title">Test Submitted!</h2>
+      <p id="submit-message" style="margin-bottom: 1rem; font-size: 0.95rem; color: var(--text-secondary);">Thank you! Your responses have been successfully saved to our database.</p>
       
       <div style="background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-color); text-align: left; margin-bottom: 1.25rem;">
         <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.9rem;">
@@ -984,9 +990,9 @@
         </div>
       </div>
 
-      <!-- Token container -->
-      <div style="margin-bottom: 1.25rem;">
-        <textarea id="exam-token-box" class="form-input" style="width: 100%; height: 80px; font-family: monospace; font-size: 0.8rem; resize: none; word-break: break-all; margin-bottom: 0.75rem; background: rgba(0,0,0,0.25);" readonly></textarea>
+      <!-- Backup Token container (Hidden by default, shown if submit fails) -->
+      <div id="backup-container" style="margin-bottom: 1.25rem; display: none;">
+        <textarea id="exam-token-box" class="form-input" style="width: 100%; height: 80px; font-family: monospace; font-size: 0.8rem; resize: none; word-break: break-all; margin-bottom: 0.75rem; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 10px; color:#fff;" readonly></textarea>
         <div style="display: flex; gap: 0.75rem;">
           <button class="btn btn-secondary" id="btn-copy-token" style="flex: 1; justify-content: center; font-size: 0.85rem;">
             <i class="fa-regular fa-clipboard"></i> Copy Token
@@ -1003,8 +1009,10 @@
     </div>
   </div>
 
-  <!-- Offline Exam and Local Token Compilation Script -->
-  <script>
+  <!-- Google Sheets Integrated Exam Script -->
+  <script type="module">
+    import { SHEETS_WEB_APP_URL } from "./sheets-config.js";
+
     const classId = "class10";
 
     // Class 10 mock test questions
@@ -1465,7 +1473,7 @@
       return score;
     }
 
-    function executeSubmitTest() {
+    async function executeSubmitTest() {
       clearInterval(timerInterval);
       trackTimeOnCurrentQuestion();
 
@@ -1500,34 +1508,67 @@
         results: results
       };
 
-      const encryptedToken = encryptToken(tokenPayload);
-
       document.getElementById("final-name").textContent = student.name;
       document.getElementById("final-id").textContent = `${student.id} (${student.location})`;
       document.getElementById("final-answered").textContent = `${stats.answered} / ${questions.length}`;
-      
-      const tokenBox = document.getElementById("exam-token-box");
-      tokenBox.value = encryptedToken;
-      
-      document.getElementById("btn-copy-token").onclick = () => {
-        navigator.clipboard.writeText(encryptedToken).then(() => {
-          const btn = document.getElementById("btn-copy-token");
-          btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
-          setTimeout(() => {
-            btn.innerHTML = `<i class="fa-regular fa-clipboard"></i> Copy Token`;
-          }, 2000);
-        });
-      };
 
-      document.getElementById("btn-download-token").onclick = () => {
-        const blob = new Blob([encryptedToken], { type: "text/plain;charset=utf-8" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `${student.id}_exam_token.cbt`;
-        link.click();
-      };
-
+      // Show Submitting Screen
+      document.getElementById("submit-title").textContent = "Submitting Exam...";
+      document.getElementById("submit-message").textContent = "Please wait while we upload your responses to the online database.";
+      document.getElementById("submit-success-icon").style.display = "flex";
+      document.getElementById("submit-error-icon").style.display = "none";
+      document.getElementById("backup-container").style.display = "none";
       completedOverlay.classList.add("active");
+
+      try {
+        const response = await fetch(SHEETS_WEB_APP_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(tokenPayload)
+        });
+
+        const resData = await response.json();
+        
+        if (resData.status === "success") {
+          document.getElementById("submit-title").textContent = "Test Submitted!";
+          document.getElementById("submit-message").textContent = "Thank you! Your responses have been successfully saved to our database.";
+        } else {
+          throw new Error(resData.message || "Server refused save");
+        }
+      } catch (err) {
+        console.error("Submission failed: ", err);
+
+        // Render Failsafe fallback
+        document.getElementById("submit-title").textContent = "Submission Failed!";
+        document.getElementById("submit-message").textContent = "There was a network error. Your data has not been saved online. Please copy or download this backup token and send it to your teacher.";
+        document.getElementById("submit-success-icon").style.display = "none";
+        document.getElementById("submit-error-icon").style.display = "flex";
+
+        const encryptedToken = encryptToken(tokenPayload);
+        const tokenBox = document.getElementById("exam-token-box");
+        tokenBox.value = encryptedToken;
+        document.getElementById("backup-container").style.display = "block";
+
+        document.getElementById("btn-copy-token").onclick = () => {
+          navigator.clipboard.writeText(encryptedToken).then(() => {
+            const btn = document.getElementById("btn-copy-token");
+            btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+            setTimeout(() => {
+              btn.innerHTML = `<i class="fa-regular fa-clipboard"></i> Copy Token`;
+            }, 2000);
+          });
+        };
+
+        document.getElementById("btn-download-token").onclick = () => {
+          const blob = new Blob([encryptedToken], { type: "text/plain;charset=utf-8" });
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = `${student.id}_backup_token.cbt`;
+          link.click();
+        };
+      }
     }
   </script>
 </body>

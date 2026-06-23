@@ -683,6 +683,9 @@
         <div class="connection-status" style="margin-right: 1rem;">
           <div class="status-dot online" id="db-status-dot"></div>
           <span id="db-status-text" style="color:var(--text-secondary)">Offline Import Active</span>
+          <button class="btn btn-secondary" id="btn-sync-sheets" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.3rem; margin-left: 0.5rem;">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh
+          </button>
         </div>
         
         <select id="class-filter" class="form-input" style="padding: 0.5rem 1rem; background: rgba(30, 41, 59, 0.6); border-radius: 10px; font-size: 0.85rem; margin-right: 1rem; color: #fff; border: 1px solid var(--border-color); font-family: 'Outfit', sans-serif; cursor: pointer; transition: all var(--transition-fast);">
@@ -819,7 +822,9 @@
   </div>
 
   <!-- Local Token Import, Storage, Analytics, and PDF Report Generation Script -->
-  <script>
+  <script type="module">
+    import { SHEETS_WEB_APP_URL } from "./sheets-config.js";
+
     // Application State
     const sessionData = {
       students: {} // uniqueStudentKey ("classId_studentId") -> { metadata, answers: { qIdx -> { selectedOption, status, questionText, correctOption, timeSpent } } }
@@ -841,6 +846,7 @@
 
     const detailsOverlay = document.getElementById("details-overlay");
     const btnCloseDetails = document.getElementById("btn-close-details");
+    const btnSyncSheets = document.getElementById("btn-sync-sheets");
 
     // Stats Elements
     const statActiveCount = document.getElementById("stat-active-count");
@@ -848,12 +854,23 @@
     const statAnswersCount = document.getElementById("stat-answers-count");
     const statAvgCompletion = document.getElementById("stat-avg-completion");
 
+    let pollInterval = null;
+
     // Initialize application on DOM load
     window.addEventListener("DOMContentLoaded", () => {
       loadSavedData();
       updateStatsAndDashboard();
       setupImportListeners();
+      
+      // Fetch Google Sheets data immediately and setup 20s polling
+      fetchGoogleSheetsData();
+      startPolling();
     });
+
+    function startPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(fetchGoogleSheetsData, 20000);
+    }
 
     // Load imported student data from localStorage
     function loadSavedData() {
@@ -927,6 +944,12 @@
           handleFile(file);
         }
       });
+
+      if (btnSyncSheets) {
+        btnSyncSheets.addEventListener("click", () => {
+          fetchGoogleSheetsData();
+        });
+      }
     }
 
     function handleFile(file) {
@@ -1444,6 +1467,99 @@
       }
 
       doc.save(`${meta.studentId}_ReportCard.pdf`);
+    }
+
+    async function fetchGoogleSheetsData() {
+      const dbStatusDot = document.getElementById("db-status-dot");
+      const dbStatusText = document.getElementById("db-status-text");
+
+      try {
+        if (!SHEETS_WEB_APP_URL || SHEETS_WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
+          dbStatusDot.classList.remove("online");
+          dbStatusText.textContent = "Sheets URL not configured";
+          return;
+        }
+
+        dbStatusText.textContent = "Syncing...";
+
+        const response = await fetch(SHEETS_WEB_APP_URL);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const resData = await response.json();
+        if (resData.status === "success") {
+          let updated = false;
+          if (resData.data && Array.isArray(resData.data)) {
+            resData.data.forEach(row => {
+              const uniqueKey = `${row["Class ID"]}_${row["Student ID"]}`;
+              if (!sessionData.students[uniqueKey]) {
+                logActivity({
+                  studentName: row["Student Name"],
+                  studentId: row["Student ID"],
+                  location: row["Location"],
+                  classId: row["Class ID"],
+                  score: row["Score"],
+                  submittedAt: row["Timestamp"]
+                });
+                updated = true;
+              }
+              mergeSubmission(row);
+            });
+
+            localStorage.setItem("cbt_imported_students", JSON.stringify(sessionData.students));
+            updateStatsAndDashboard();
+          }
+
+          dbStatusDot.classList.add("online");
+          dbStatusText.textContent = `Synced at ${new Date().toLocaleTimeString()}`;
+        } else {
+          throw new Error(resData.message || "Failed to retrieve data from Sheets");
+        }
+      } catch (err) {
+        console.error("Sheets Sync Error: ", err);
+        dbStatusDot.classList.remove("online");
+        dbStatusText.textContent = "Sync Offline (Network Error)";
+      }
+    }
+
+    function mergeSubmission(sub) {
+      let results;
+      try {
+        results = JSON.parse(sub["Results JSON"]);
+      } catch (e) {
+        console.error("Failed to parse Results JSON for student: ", sub["Student ID"], e);
+        return;
+      }
+
+      const classId = sub["Class ID"];
+      const studentId = sub["Student ID"];
+      const uniqueKey = `${classId}_${studentId}`;
+
+      const answersMap = {};
+      results.forEach((res, index) => {
+        answersMap[index] = {
+          selectedOption: res.selectedOption === "Unattempted" ? null : res.selectedOption,
+          status: res.status,
+          questionText: res.questionText,
+          correctOption: res.correctOption,
+          timeSpent: res.timeSpent
+        };
+      });
+
+      sessionData.students[uniqueKey] = {
+        metadata: {
+          classId,
+          studentId,
+          studentName: sub["Student Name"],
+          location: sub["Location"],
+          scorePreview: sub["Score"],
+          status: "submitted",
+          submittedAt: sub["Timestamp"]
+        },
+        answers: answersMap,
+        originalResults: results
+      };
     }
 
     // Attach to global window scope for inline onclick buttons in template string
