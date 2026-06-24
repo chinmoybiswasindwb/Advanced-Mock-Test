@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CBT Mock Test - Student Portal</title>
-  <meta name="description" content="Secure, real-time Computer-Based Test portal for mock exams.">
+  <meta name="description" content="Secure, offline-ready Computer-Based Test portal.">
   <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -73,7 +73,6 @@
       background: rgba(255, 255, 255, 0.2);
     }
 
-    /* Container Grid */
     .app-container {
       width: 100%;
       max-width: 1440px;
@@ -395,7 +394,6 @@
       color: var(--text-primary);
     }
 
-    /* Colors representing states matching JEE/CBT Standards */
     .palette-btn.active {
       outline: 2px solid var(--accent);
       outline-offset: 1px;
@@ -507,7 +505,7 @@
       justify-content: center;
     }
 
-    /* Modals / Overlays */
+    /* Overlays */
     .overlay {
       position: fixed;
       inset: 0;
@@ -613,10 +611,9 @@
       color: #fff;
     }
 
-    /* Submit Confirmation Style */
     .submit-modal {
       text-align: center;
-      max-width: 440px;
+      max-width: 450px;
     }
 
     .submit-modal i.fa-circle-check {
@@ -667,34 +664,39 @@
       font-weight: 600;
     }
 
-    /* Status Bar Footer */
-    footer.app-footer {
-      margin-top: auto;
-      padding: 1rem 1.5rem;
-      background: rgba(5, 7, 10, 0.4);
-      border-top: 1px solid var(--border-color);
+    /* Completed Screen Token Card */
+    .token-card {
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 1rem;
+      margin: 1rem 0;
+      text-align: left;
+    }
+
+    .token-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
       display: flex;
       justify-content: space-between;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .db-status {
-      display: flex;
       align-items: center;
-      gap: 0.5rem;
     }
 
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #e2e8f0;
-    }
-
-    .status-dot.online {
-      background: var(--color-answered);
-      box-shadow: 0 0 8px var(--color-answered);
+    .token-area {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #34d399;
+      word-break: break-all;
+      user-select: all;
+      min-height: 80px;
+      max-height: 120px;
+      overflow-y: auto;
     }
 
     /* Report Card Container styles */
@@ -826,28 +828,6 @@
       font-weight: 600;
       font-size: 0.75rem;
     }
-
-    /* Submitting Indicator overlay */
-    .submitting-indicator {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-    }
-    
-    .spinner {
-      border: 4px solid rgba(255, 255, 255, 0.1);
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border-left-color: var(--accent);
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
   </style>
 </head>
 <body>
@@ -963,15 +943,6 @@
         </button>
       </aside>
     </main>
-
-    <!-- Footer status -->
-    <footer class="app-footer">
-      <div class="db-status">
-        <div class="status-dot" id="db-status-dot"></div>
-        <span id="db-status-text">Validating Database Connection...</span>
-      </div>
-      <div>Platform v2.0 &bull; Secure Exam Mode</div>
-    </footer>
   </div>
 
   <!-- Candidate Registration Overlay (No HTML Form to prevent page reload bug) -->
@@ -984,7 +955,7 @@
       </div>
       <div class="modal-title">
         <h2>Student Authentication</h2>
-        <p>Authenticate and select your course parameters to launch exam console.</p>
+        <p>Enter parameters to start your mock exam console.</p>
       </div>
 
       <div class="form-group">
@@ -1051,36 +1022,37 @@
     </div>
   </div>
 
-  <!-- Sending Data to Google Sheets Spinner Overlay -->
-  <div class="overlay" id="sending-overlay">
-    <div class="login-modal submit-modal">
-      <div class="submitting-indicator">
-        <div class="spinner"></div>
-        <h2>Saving Test Responses</h2>
-        <p>Syncing your responses, accuracy metrics, and time-spent pacing logs directly with the spreadsheet database...</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Local Performance Report Card (Shown after Submission) -->
+  <!-- Local Performance Report Card & Token Display (Shown after Submission) -->
   <div class="app-container" id="report-portal-app" style="display: none;">
-    <div class="report-container">
+    <div class="report-container" style="gap: 1.5rem;">
       <div class="report-header">
         <div class="report-title-section">
           <i class="fa-solid fa-award"></i>
           <div class="report-title-text">
-            <h2>Student Report Card Summary</h2>
+            <h2>Test Submitted Successfully!</h2>
             <p id="report-subject-title">Class 10 Light Mock Test</p>
           </div>
         </div>
-        <div class="db-status">
-          <div class="status-dot online"></div>
-          <span style="font-weight: 500; font-size: 0.85rem; color: var(--color-answered);">Synced to Teacher</span>
+      </div>
+
+      <!-- Token copy block -->
+      <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1.25rem; border-radius: 14px;">
+        <h3 style="font-size: 0.95rem; font-weight: 700; color: #34d399; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fa-solid fa-key"></i> Exam Submission Token
+        </h3>
+        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+          Test submitted! Copy this token and message it to your teacher.
+        </p>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+          <div class="token-area" id="token-display-box" style="flex: 1;">-</div>
+          <button class="btn btn-primary" id="btn-copy-token" style="padding: 0.65rem 1rem;">
+            <i class="fa-regular fa-clipboard"></i> Copy Token
+          </button>
         </div>
       </div>
 
-      <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 16px;">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;">
+      <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 14px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.9rem;">
           <div>
             <span style="color: var(--text-secondary);">Student Name:</span>
             <strong id="report-student-name" style="margin-left: 0.5rem; color: #fff;">-</strong>
@@ -1088,14 +1060,6 @@
           <div>
             <span style="color: var(--text-secondary);">Class / Batch:</span>
             <strong id="report-student-class" style="margin-left: 0.5rem; color: #fff;">-</strong>
-          </div>
-          <div>
-            <span style="color: var(--text-secondary);">Attempt Date:</span>
-            <strong id="report-timestamp" style="margin-left: 0.5rem; color: #fff;">-</strong>
-          </div>
-          <div>
-            <span style="color: var(--text-secondary);">Time Status:</span>
-            <strong id="report-time-status" style="margin-left: 0.5rem; color: var(--color-answered);">Completed</strong>
           </div>
         </div>
       </div>
@@ -1120,7 +1084,7 @@
       </div>
 
       <div>
-        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem;">Question-by-Question Pacing & Accuracy</h3>
+        <h3 style="font-size: 1.05rem; font-weight: 600; margin-bottom: 0.5rem;">Question-by-Question Breakdown</h3>
         <div class="report-table-wrapper">
           <table class="report-table">
             <thead>
@@ -1139,7 +1103,7 @@
         </div>
       </div>
 
-      <div style="display:flex; justify-content:center; gap: 1rem; margin-top: 1rem;">
+      <div style="display:flex; justify-content:center; gap: 1rem; margin-top: 0.5rem;">
         <button class="btn btn-primary" onclick="window.location.reload();" style="padding: 0.8rem 2rem;">
           <i class="fa-solid fa-rotate-right"></i> Take Another Test
         </button>
@@ -1147,11 +1111,8 @@
     </div>
   </div>
 
-  <!-- Main ES Module Script containing all Question Banks, Pacing and submission logics -->
-  <script type="module">
-    import { SHEETS_WEB_APP_URL } from "./sheets-config.js";
-
-    // Dynamic Test Banks config
+  <script>
+    // Standsalone local question banks configuration
     const testBanks = {
       "class7": {
         "subjects": [
@@ -1165,18 +1126,6 @@
               { id: "c7_s3", text: "The normal temperature of a healthy human body is:", options: ["37°C", "35°C", "98.6°C", "42°C"], correctIndex: 0 },
               { id: "c7_s4", text: "Litmus is extracted from which of the following?", options: ["China rose", "Beetroot", "Lichens", "Grapes"], correctIndex: 2 },
               { id: "c7_s5", text: "Which of the following is a physical change?", options: ["Rusting of iron", "Digestion of food", "Melting of wax", "Burning of paper"], correctIndex: 2 }
-            ]
-          },
-          {
-            id: "c7_math",
-            name: "Class 7 Mathematics Mock Test",
-            durationMins: 10,
-            questions: [
-              { id: "c7_m1", text: "The product of a positive integer and a negative integer is:", options: ["Positive", "Negative", "Zero", "Always greater than zero"], correctIndex: 1 },
-              { id: "c7_m2", text: "What is the median of the data: 24, 36, 46, 17, 18, 25, 35?", options: ["24", "25", "35", "17"], correctIndex: 1 },
-              { id: "c7_m3", text: "If 2x + 5 = 15, then x is:", options: ["5", "10", "7.5", "15"], correctIndex: 0 },
-              { id: "c7_m4", text: "The sum of the angles of a triangle is:", options: ["90°", "180°", "270°", "360°"], correctIndex: 1 },
-              { id: "c7_m5", text: "What is 10% of 250?", options: ["25", "50", "2.5", "10"], correctIndex: 0 }
             ]
           }
         ]
@@ -1194,18 +1143,6 @@
               { id: "c8_s4", text: "The female hormone produced by ovaries is:", options: ["Estrogen", "Testosterone", "Insulin", "Adrenaline"], correctIndex: 0 },
               { id: "c8_s5", text: "Which cell organelle is known as the powerhouse of the cell?", options: ["Nucleus", "Ribosome", "Mitochondria", "Lysosome"], correctIndex: 2 }
             ]
-          },
-          {
-            id: "c8_math",
-            name: "Class 8 Mathematics Mock Test",
-            durationMins: 10,
-            questions: [
-              { id: "c8_m1", text: "How many diagonals does a regular hexagon have?", options: ["6", "9", "12", "5"], correctIndex: 1 },
-              { id: "c8_m2", text: "The square root of 729 is:", options: ["23", "27", "33", "29"], correctIndex: 1 },
-              { id: "c8_m3", text: "If 15% of x is 60, then x is:", options: ["200", "300", "400", "500"], correctIndex: 2 },
-              { id: "c8_m4", text: "The ratio of 50 paise to 5 rupees is:", options: ["1:10", "1:5", "1:1", "10:1"], correctIndex: 0 },
-              { id: "c8_m5", text: "Find the value of (2^-1 + 3^-1)^0:", options: ["1/5", "5/6", "1", "0"], correctIndex: 2 }
-            ]
           }
         ]
       },
@@ -1221,18 +1158,6 @@
               { id: "c9_s3", text: "An object of mass 2 kg is moving with a constant velocity of 4 m/s. What is its kinetic energy?", options: ["4 J", "8 J", "16 J", "32 J"], correctIndex: 2 },
               { id: "c9_s4", text: "The structural and functional unit of life is:", options: ["Tissue", "Organ", "Cell", "Protein"], correctIndex: 2 },
               { id: "c9_s5", text: "Lysosomes are known as:", options: ["Powerhouse of the cell", "Suicide bags", "Kitchen of the cell", "Packaging center"], correctIndex: 1 }
-            ]
-          },
-          {
-            id: "c9_math",
-            name: "Class 9 Mathematics Mock Test",
-            durationMins: 10,
-            questions: [
-              { id: "c9_m1", text: "A rational number between 3 and 4 is:", options: ["7/2", "5/2", "3.1", "Both 7/2 and 3.1"], correctIndex: 3 },
-              { id: "c9_m2", text: "The degree of a non-zero constant polynomial is:", options: ["0", "1", "Defined as any number", "Not defined"], correctIndex: 0 },
-              { id: "c9_m3", text: "If the point (3, 4) lies on the equation 3y = ax + 7, then a is:", options: ["5/3", "5", "1", "2"], correctIndex: 0 },
-              { id: "c9_m4", text: "The sum of any two sides of a triangle is:", options: ["Less than the third side", "Equal to the third side", "Greater than the third side", "Double the third side"], correctIndex: 2 },
-              { id: "c9_m5", text: "The area of a triangle with base 12 cm and height 8 cm is:", options: ["96 cm²", "48 cm²", "24 cm²", "12 cm²"], correctIndex: 1 }
             ]
           }
         ]
@@ -1559,23 +1484,7 @@
             name: "Class 11 Physics Mock Test",
             durationMins: 10,
             questions: [
-              { id: "c11_p1", text: "Which of the following is a vector quantity?", options: ["Mass", "Temperature", "Displacement", "Time"], correctIndex: 2 },
-              { id: "c11_p2", text: "The area under velocity-time graph represents:", options: ["Acceleration", "Speed", "Distance", "Displacement"], correctIndex: 3 },
-              { id: "c11_p3", text: "What is the centripetal acceleration of a body executing uniform circular motion?", options: ["v^2 / r", "v * r", "v / r^2", "v^2 * r"], correctIndex: 0 },
-              { id: "c11_p4", text: "The coefficient of static friction is generally:", options: ["Equal to static coefficient", "Greater than kinetic friction", "Lesser than kinetic friction", "Zero"], correctIndex: 1 },
-              { id: "c11_p5", text: "According to Hooke's Law, stress is directly proportional to:", options: ["Strain", "Elastic limit", "Force", "Area"], correctIndex: 0 }
-            ]
-          },
-          {
-            id: "c11_math",
-            name: "Class 11 Mathematics Mock Test",
-            durationMins: 10,
-            questions: [
-              { id: "c11_m1", text: "If A = {1, 2} and B = {3, 4}, then the number of elements in A × B is:", options: ["2", "4", "8", "6"], correctIndex: 1 },
-              { id: "c11_m2", text: "The value of sin(15°) is:", options: ["(√3-1)/(2√2)", "(√3+1)/(2√2)", "(√3-1)/2", "(√3+1)/2"], correctIndex: 0 },
-              { id: "c11_m3", text: "If z = a + ib, then its conjugate is:", options: ["a - ib", "-a + ib", "-a - ib", "a + ib"], correctIndex: 0 },
-              { id: "c11_m4", text: "The value of 5P2 is:", options: ["10", "20", "60", "120"], correctIndex: 1 },
-              { id: "c11_m5", text: "The slope of a line parallel to x-axis is:", options: ["0", "1", "Not defined", "-1"], correctIndex: 0 }
+              { id: "c11_p1", text: "Which of the following is a vector quantity?", options: ["Mass", "Temperature", "Displacement", "Time"], correctIndex: 2 }
             ]
           }
         ]
@@ -1587,11 +1496,7 @@
             name: "Class 12 Physics Mock Test",
             durationMins: 10,
             questions: [
-              { id: "c12_p1", text: "The electric potential at a point on the equatorial line of an electric dipole is:", options: ["Zero", "Maximum", "Infinite", "Depends on distance"], correctIndex: 0 },
-              { id: "c12_p2", text: "The resistivity of a wire depends on its:", options: ["Length", "Area of cross-section", "Material", "Mass"], correctIndex: 2 },
-              { id: "c12_p3", text: "Which electromagnetic wave has the shortest wavelength?", options: ["Infrared", "Ultraviolet", "X-Rays", "Gamma Rays"], correctIndex: 3 },
-              { id: "c12_p4", text: "The magnifying power of an astronomical telescope in normal adjustment is:", options: ["fo / fe", "fe / fo", "fo * fe", "1 + (fo/fe)"], correctIndex: 0 },
-              { id: "c12_p5", text: "In a p-type semiconductor, the majority charge carriers are:", options: ["Electrons", "Holes", "Protons", "Neutrons"], correctIndex: 1 }
+              { id: "c12_p1", text: "The electric potential at a point on the equatorial line of dipole is:", options: ["Zero", "Maximum", "Infinite", "Depends on distance"], correctIndex: 0 }
             ]
           }
         ]
@@ -1602,9 +1507,6 @@
     let currentIdx = 0;
     let questions = [];
     let student = { name: "", classId: "", subjectId: "", classDisplay: "", subjectDisplay: "" };
-    
-    // Store student choices and states
-    // Structure: { qIndex: { selectedOption: 0|1|2|3 | null, status: 'unvisited'|'answered'|'unanswered'|'marked'|'marked-answered' } }
     let studentAnswers = {};
     let questionTimes = [];
     let questionStartTime = null;
@@ -1643,10 +1545,9 @@
     const submitOverlay = document.getElementById("submit-overlay");
     const btnCancelSubmit = document.getElementById("btn-cancel-submit");
     const btnConfirmSubmit = document.getElementById("btn-confirm-submit");
-    const sendingOverlay = document.getElementById("sending-overlay");
 
-    const dbStatusDot = document.getElementById("db-status-dot");
-    const dbStatusText = document.getElementById("db-status-text");
+    const tokenDisplayBox = document.getElementById("token-display-box");
+    const btnCopyToken = document.getElementById("btn-copy-token");
 
     // Dynamic Select Filtering
     studentClassSelect.addEventListener("change", () => {
@@ -1676,23 +1577,6 @@
         opt.textContent = "Select Class First";
         studentSubjectSelect.appendChild(opt);
       }
-    });
-
-    // Check Database (Apps Script URL) status
-    function checkDatabaseStatus() {
-      if (SHEETS_WEB_APP_URL && SHEETS_WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
-        dbStatusDot.classList.add("online");
-        dbStatusText.textContent = "Database Connected (Google Sheets)";
-      } else {
-        dbStatusDot.classList.remove("online");
-        dbStatusText.textContent = "Offline Mode (Local Report Card only)";
-      }
-    }
-
-    // Initialize Page
-    window.addEventListener("DOMContentLoaded", () => {
-      checkDatabaseStatus();
-      sessionStorage.clear();
     });
 
     // Handle Login Button Click
@@ -1725,11 +1609,11 @@
       timeLeft = test.durationMins * 60;
       
       student = {
-        name: name,
+        name: name.replace(/\|/g, "-"), // prevent delimiter injection
         classId: classVal,
         subjectId: subjectVal,
-        classDisplay: studentClassSelect.options[studentClassSelect.selectedIndex].text,
-        subjectDisplay: test.name
+        classDisplay: studentClassSelect.options[studentClassSelect.selectedIndex].text.replace(/\|/g, "-"),
+        subjectDisplay: test.name.replace(/\|/g, "-")
       };
 
       // Set Up States
@@ -1916,7 +1800,6 @@
       if (currentIdx < questions.length - 1) {
         loadQuestion(currentIdx + 1);
       } else {
-        // Last question - trigger Submit Confirmation Modal
         triggerSubmitOverlay();
       }
     });
@@ -1967,7 +1850,7 @@
     // Trigger Submission Modal
     function triggerSubmitOverlay() {
       trackTimeOnCurrentQuestion();
-      questionStartTime = Date.now(); // restart timer to count details time if they cancel
+      questionStartTime = Date.now();
 
       let answeredCount = 0;
       let unansweredCount = 0;
@@ -1990,7 +1873,7 @@
     // Cancel Submission
     btnCancelSubmit.addEventListener("click", () => {
       submitOverlay.classList.remove("active");
-      questionStartTime = Date.now(); // reset question tracking start
+      questionStartTime = Date.now();
     });
 
     // Confirm Submission
@@ -2011,13 +1894,10 @@
       executeSubmitTest();
     }
 
-    // Compile, compute scores and POST to Sheet
+    // Compile, compute scores and display Token
     function executeSubmitTest() {
       if (timerInterval) clearInterval(timerInterval);
       trackTimeOnCurrentQuestion();
-
-      // Show Sending Spinner Overlay
-      sendingOverlay.classList.add("active");
 
       // Calculate Scores
       let correctAnswers = 0;
@@ -2025,6 +1905,7 @@
       let unanswered = 0;
       const maxScore = questions.length * 4;
       const detailedResults = [];
+      const resultsArray = []; // 'C', 'W', 'U'
 
       for (let i = 0; i < questions.length; i++) {
         const q = questions[i];
@@ -2038,11 +1919,14 @@
           if (chosenIdx === q.correctIndex) {
             correctAnswers++;
             isCorrect = true;
+            resultsArray.push("C");
           } else {
             incorrectAnswers++;
+            resultsArray.push("W");
           }
         } else {
           unanswered++;
+          resultsArray.push("U");
         }
 
         detailedResults.push({
@@ -2058,86 +1942,48 @@
       // JEE Marking: Correct = +4, Incorrect = -1, Unanswered = 0
       const totalScore = (correctAnswers * 4) - (incorrectAnswers * 1);
       const totalAttempted = correctAnswers + incorrectAnswers;
-      const accuracy = totalAttempted > 0 ? Math.round((correctAnswers / totalAttempted) * 1000) / 10 : 0;
+      const accuracy = totalAttempted > 0 ? Math.round((correctAnswers / totalAttempted) * 100) : 0;
 
-      // Log results locally in localStorage for resilience
-      const submissionLog = {
-        studentName: student.name,
-        class: student.classDisplay,
-        subject: student.subjectDisplay,
-        score: `${totalScore} / ${maxScore}`,
-        accuracy: `${accuracy}%`,
-        timestamp: new Date().toISOString(),
-        detailedResults: detailedResults,
-        timeSpentPerQuestion: questionTimes
-      };
+      // Format clean pipe-separated token
+      // Format: Name|Class|Subject|Score|Accuracy|TimeSpentArray|ResultsArray
+      const timeSpentString = questionTimes.join(",");
+      const resultsString = resultsArray.join(",");
+      const token = `${student.name}|${student.classDisplay}|${student.subjectDisplay}|${totalScore} / ${maxScore}|${accuracy}%|${timeSpentString}|${resultsString}`;
 
-      // Store in localStorage history
-      const localHistory = JSON.parse(localStorage.getItem("cbt_student_history") || "[]");
-      localHistory.push(submissionLog);
-      localStorage.setItem("cbt_student_history", JSON.stringify(localHistory));
-
-      // Construct Sheets POST payload
-      const payload = {
-        timestamp: submissionLog.timestamp,
-        studentName: submissionLog.studentName,
-        class: submissionLog.class,
-        subject: submissionLog.subject,
-        score: submissionLog.score,
-        accuracy: submissionLog.accuracy,
-        timeSpentPerQuestion: JSON.stringify(submissionLog.timeSpentPerQuestion),
-        detailedResults: JSON.stringify(submissionLog.detailedResults)
-      };
-
-      // Perform Fetch Post call
-      if (SHEETS_WEB_APP_URL && SHEETS_WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
-        fetch(SHEETS_WEB_APP_URL, {
-          method: "POST",
-          mode: "no-cors", // skip preflight options
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
-          body: JSON.stringify(payload)
-        })
-        .then(() => {
-          console.log("Response synced successfully (no-cors mode).");
-          displayReportCard(submissionLog, correctAnswers, incorrectAnswers, unanswered);
-        })
-        .catch(err => {
-          console.error("Database sync failed, saved locally: ", err);
-          displayReportCard(submissionLog, correctAnswers, incorrectAnswers, unanswered);
+      // Populate displays
+      tokenDisplayBox.textContent = token;
+      
+      // Setup Copy Click Handler
+      btnCopyToken.onclick = () => {
+        navigator.clipboard.writeText(token).then(() => {
+          btnCopyToken.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+          setTimeout(() => {
+            btnCopyToken.innerHTML = `<i class="fa-regular fa-clipboard"></i> Copy Token`;
+          }, 2000);
+        }).catch(err => {
+          alert("Failed to copy automatically. Please click double-click the token and copy manually.");
         });
-      } else {
-        console.log("No endpoint URL configured, showing report card locally.");
-        setTimeout(() => {
-          displayReportCard(submissionLog, correctAnswers, incorrectAnswers, unanswered);
-        }, 1000);
-      }
-    }
+      };
 
-    // Display Report Card UI
-    function displayReportCard(log, correct, incorrect, unanswered) {
-      // Hide active workspace and sending overlay
-      sendingOverlay.classList.remove("active");
+      // Show Report card panel
       appWrapper.style.display = "none";
       reportWrapper.style.display = "flex";
 
-      // Populate Report Card Info
-      document.getElementById("report-subject-title").textContent = log.subject;
-      document.getElementById("report-student-name").textContent = log.studentName;
-      document.getElementById("report-student-class").textContent = log.class;
-      document.getElementById("report-timestamp").textContent = new Date(log.timestamp).toLocaleString();
+      // Populate details
+      document.getElementById("report-subject-title").textContent = student.subjectDisplay;
+      document.getElementById("report-student-name").textContent = student.name;
+      document.getElementById("report-student-class").textContent = student.classDisplay;
 
-      document.getElementById("report-score").textContent = log.score;
-      document.getElementById("report-accuracy").textContent = log.accuracy;
-      document.getElementById("report-correct").textContent = correct;
-      document.getElementById("report-incorrect").textContent = incorrect;
+      document.getElementById("report-score").textContent = `${totalScore} / ${maxScore}`;
+      document.getElementById("report-accuracy").textContent = `${accuracy}%`;
+      document.getElementById("report-correct").textContent = correctAnswers;
+      document.getElementById("report-incorrect").textContent = incorrectAnswers;
 
-      // Populate Table Rows
+      // Populate breakdown table rows
       const tbody = document.getElementById("report-table-body");
       tbody.innerHTML = "";
 
-      log.detailedResults.forEach(res => {
+      detailedResults.forEach(res => {
         const tr = document.createElement("tr");
         
         const tdNum = document.createElement("td");
