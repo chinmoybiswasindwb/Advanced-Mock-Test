@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CBT Mock Test - Admin Dashboard</title>
+  <meta name="description" content="Real-time administration dashboard for monitoring CBT mock test sessions.">
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- jsPDF and jsPDF-AutoTable CDNs for PDF Report Card generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+    /* CSS Variables & Reset */
+    :root {
+      --bg-dark: #070913;
+      --bg-surface: rgba(15, 23, 42, 0.65);
+      --bg-card: rgba(30, 41, 59, 0.45);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.4);
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      
+      --color-unvisited: #475569;
+      --color-answered: #10b981;
+      --color-unanswered: #ef4444;
+      --color-review: #f59e0b;
+      --color-review-answered: #8b5cf6;
+      
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.1);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Container Grid */
+    .app-container {
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      flex: 1;
+    }
+
+    /* Header Bar */
+    header {
+      background: var(--bg-surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-logo {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+      box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+    }
+
+    .brand-title h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-title p {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.65rem 1.25rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--text-secondary);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.35);
+    }
+
+    /* Stats Banner */
+    .stats-banner {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+    }
+
+    .stat-card {
+      background: var(--bg-surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      color: var(--accent);
+    }
+
+    .stat-icon.green { color: var(--color-answered); }
+    .stat-icon.orange { color: var(--color-review); }
+    .stat-icon.blue { color: #3b82f6; }
+
+    /* Dashboard Layout */
+    .dashboard-panel {
+      background: var(--bg-surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      min-height: 500px;
+    }
+
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1.25rem;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .filter-label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .select-dropdown {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.5rem 2.5rem 0.5rem 1rem;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1.1rem;
+    }
+
+    .select-dropdown option {
+      background: #0f172a;
+      color: #fff;
+    }
+
+    /* Submissions Table */
+    .table-container {
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow-x: auto;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    table.submissions-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+
+    table.submissions-table th, table.submissions-table td {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    table.submissions-table th {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+
+    table.submissions-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    table.submissions-table tr:hover td {
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .badge {
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-block;
+    }
+
+    .badge-class {
+      background: rgba(99, 102, 241, 0.12);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .badge-accuracy {
+      background: rgba(245, 158, 11, 0.1);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .badge-source {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .badge-source.sheets {
+      background: rgba(16, 185, 129, 0.08);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.15);
+    }
+
+    .action-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-xs {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.75rem;
+      border-radius: 6px;
+    }
+
+    .empty-state {
+      padding: 4rem 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      color: var(--border-color);
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 7, 10, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--transition-normal);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 700px;
+      max-height: 85vh;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      transform: scale(0.9);
+      transition: all var(--transition-normal);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.25rem;
+      cursor: pointer;
+      transition: color var(--transition-fast);
+    }
+
+    .close-btn:hover {
+      color: #fff;
+    }
+
+    .modal-body {
+      overflow-y: auto;
+      padding-right: 0.5rem;
+      flex: 1;
+    }
+
+    /* Pacing Analysis Timeline */
+    .pacing-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .pacing-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .pacing-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+
+    .progress-bar-container {
+      background: rgba(255, 255, 255, 0.05);
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 4px;
+      background: var(--accent);
+      transition: width 0.5s ease-out;
+    }
+
+    .progress-bar.correct {
+      background: var(--color-answered);
+    }
+
+    .progress-bar.wrong {
+      background: var(--color-unanswered);
+    }
+
+    .progress-bar.unanswered {
+      background: var(--text-muted);
+    }
+
+    .pacing-item-qtext {
+      font-size: 0.85rem;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .pacing-options-row {
+      display: flex;
+      gap: 1.5rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      border-top: 1px solid rgba(255,255,255,0.03);
+      padding-top: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    /* DB Status Dot style */
+    .db-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+    }
+
+    .status-dot.online {
+      background: var(--color-answered);
+      box-shadow: 0 0 8px var(--color-answered);
+    }
+
+    /* Footer status */
+    footer.app-footer {
+      margin-top: auto;
+      padding: 1rem 1.5rem;
+      background: rgba(5, 7, 10, 0.4);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .loader {
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border-left-color: var(--accent);
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- App Wrapper Container -->
+  <div class="app-container">
+    <!-- Header -->
+    <header>
+      <div class="brand-section">
+        <div class="brand-logo">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div class="brand-title">
+          <h1>CBT Analytics Panel</h1>
+          <p>Mock Test Database Administration</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button class="btn btn-primary" id="btn-refresh">
+          <i class="fa-solid fa-rotate"></i> Fetch Database
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats Banner -->
+    <section class="stats-banner">
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Total Submissions</span>
+          <span class="stat-value" id="stat-total-subs">0</span>
+        </div>
+        <div class="stat-icon blue">
+          <i class="fa-solid fa-user-graduate"></i>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Average Score</span>
+          <span class="stat-value" id="stat-avg-score">0.0</span>
+        </div>
+        <div class="stat-icon orange">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Average Accuracy</span>
+          <span class="stat-value" id="stat-avg-accuracy">0%</span>
+        </div>
+        <div class="stat-icon green">
+          <i class="fa-solid fa-bullseye"></i>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Active Database</span>
+          <span class="stat-value" style="font-size: 0.95rem; font-weight: 600;" id="stat-active-db">Google Sheets</span>
+        </div>
+        <div class="stat-icon">
+          <i class="fa-solid fa-database"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Dashboard Panel -->
+    <main class="dashboard-panel">
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <span class="filter-label"><i class="fa-solid fa-filter"></i> Filter Batch:</span>
+          <select id="batch-filter" class="select-dropdown">
+            <option value="all">All Classes</option>
+            <option value="class7">Class 7</option>
+            <option value="class8">Class 8</option>
+            <option value="class9">Class 9</option>
+            <option value="class10">Class 10</option>
+            <option value="class11">Class 11</option>
+            <option value="class12">Class 12</option>
+          </select>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);" id="last-updated-time">
+          Last Synced: Never
+        </div>
+      </div>
+
+      <!-- Submissions Table container -->
+      <div class="table-container">
+        <table class="submissions-table" id="submissions-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Student Name</th>
+              <th>Class</th>
+              <th>Test Subject</th>
+              <th>Score</th>
+              <th>Accuracy</th>
+              <th>Source</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Dynamic Submissions Rows -->
+          </tbody>
+        </table>
+        
+        <!-- Table Loader / Empty State -->
+        <div class="empty-state" id="table-empty-state">
+          <i class="fa-solid fa-folder-open"></i>
+          <p id="empty-state-text">No student submission entries found. Click "Fetch Database" or take a test to populate.</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer status -->
+    <footer class="app-footer">
+      <div class="db-status">
+        <div class="status-dot" id="db-status-dot"></div>
+        <span id="db-status-text">Validating Database Connection...</span>
+      </div>
+      <div>Platform v2.0 &bull; Secure Administration Panel</div>
+    </footer>
+  </div>
+
+  <!-- Pacing Timeline Modal -->
+  <div class="modal-overlay" id="pacing-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="pacing-modal-title">Student Question-by-Question Pacing</h3>
+        <button class="close-btn" id="close-modal-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="pacing-modal-body">
+        <!-- Dynamic pacing timeline -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Main ES Module Script containing API Consumption & PDF rendering -->
+  <script type="module">
+    import { SHEETS_WEB_APP_URL } from "./sheets-config.js";
+
+    // Submissions Array Cache
+    let allSubmissions = [];
+    const pacingModal = document.getElementById("pacing-modal");
+    const closeModalBtn = document.getElementById("close-modal-btn");
+    const batchFilter = document.getElementById("batch-filter");
+    const btnRefresh = document.getElementById("btn-refresh");
+
+    // Check Database connection URL
+    function getDatabaseStatus() {
+      const dot = document.getElementById("db-status-dot");
+      const text = document.getElementById("db-status-text");
+      
+      if (SHEETS_WEB_APP_URL && SHEETS_WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
+        dot.classList.add("online");
+        text.textContent = "Connected to Google Sheets API";
+        document.getElementById("stat-active-db").textContent = "Google Sheets";
+      } else {
+        dot.classList.remove("online");
+        text.textContent = "Offline Config Mode (Local caching enabled)";
+        document.getElementById("stat-active-db").textContent = "Local Storage Only";
+      }
+    }
+
+    // Initialize Panel
+    window.addEventListener("DOMContentLoaded", () => {
+      getDatabaseStatus();
+      fetchDatabase();
+    });
+
+    // Close pacing modal
+    closeModalBtn.addEventListener("click", () => {
+      pacingModal.classList.remove("active");
+    });
+    pacingModal.addEventListener("click", (e) => {
+      if (e.target === pacingModal) pacingModal.classList.remove("active");
+    });
+
+    // Fetch Database trigger
+    btnRefresh.addEventListener("click", () => {
+      fetchDatabase();
+    });
+
+    // Filtering Dropdown change
+    batchFilter.addEventListener("change", () => {
+      renderSubmissions();
+    });
+
+    // Primary Database Fetching routine
+    function fetchDatabase() {
+      btnRefresh.disabled = true;
+      btnRefresh.innerHTML = `<span class="loader"></span> Fetching...`;
+      
+      const localData = JSON.parse(localStorage.getItem("cbt_student_history") || "[]");
+      const normalizedLocal = localData.map(item => ({
+        ...item,
+        timestamp: item.timestamp,
+        studentName: item.studentName,
+        class: item.class,
+        subject: item.subject,
+        score: item.score,
+        accuracy: item.accuracy,
+        timeSpentPerQuestion: Array.isArray(item.timeSpentPerQuestion) ? item.timeSpentPerQuestion : JSON.parse(item.timeSpentPerQuestion || "[]"),
+        detailedResults: Array.isArray(item.detailedResults) ? item.detailedResults : JSON.parse(item.detailedResults || "[]"),
+        source: "Local Cache"
+      }));
+
+      if (SHEETS_WEB_APP_URL && SHEETS_WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
+        fetch(SHEETS_WEB_APP_URL)
+          .then(response => {
+            if (!response.ok) throw new Error("HTTP error " + response.status);
+            return response.json();
+          })
+          .then(res => {
+            if (res.status === "success") {
+              const sheetsData = (res.data || []).map(row => {
+                let parsedPacing = [];
+                let parsedResults = [];
+                try {
+                  parsedPacing = JSON.parse(row["Time Spent Per Question"] || "[]");
+                } catch(e) {}
+                try {
+                  parsedResults = JSON.parse(row["Detailed Results"] || "[]");
+                } catch(e) {}
+
+                return {
+                  timestamp: row["Timestamp"] || new Date().toISOString(),
+                  studentName: row["Student Name"] || "Unknown",
+                  class: row["Class"] || "Class 10",
+                  subject: row["Test Subject"] || "Mock Test",
+                  score: row["Total Score"] || "0 / 0",
+                  accuracy: row["Accuracy"] || "0%",
+                  timeSpentPerQuestion: parsedPacing,
+                  detailedResults: parsedResults,
+                  source: "Google Sheet"
+                };
+              });
+
+              // Merge, prioritizing Google Sheet data but retaining Local Cache items not in Sheets (unique Timestamp + Name key)
+              const merged = [...sheetsData];
+              normalizedLocal.forEach(localItem => {
+                const match = sheetsData.find(sheetItem => 
+                  sheetItem.studentName === localItem.studentName && 
+                  sheetItem.subject === localItem.subject &&
+                  Math.abs(new Date(sheetItem.timestamp) - new Date(localItem.timestamp)) < 10000 // 10s window
+                );
+                if (!match) {
+                  merged.push(localItem);
+                }
+              });
+
+              allSubmissions = merged;
+            } else {
+              console.warn("Apps Script returned error message: ", res.message);
+              allSubmissions = normalizedLocal;
+            }
+            finalizeFetch();
+          })
+          .catch(err => {
+            console.error("Sheets Fetch error, fallback to local storage: ", err);
+            allSubmissions = normalizedLocal;
+            finalizeFetch();
+          });
+      } else {
+        // Only load local storage
+        setTimeout(() => {
+          allSubmissions = normalizedLocal;
+          finalizeFetch();
+        }, 800);
+      }
+    }
+
+    // Complete fetching indicator resetting
+    function finalizeFetch() {
+      allSubmissions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      renderSubmissions();
+      
+      btnRefresh.disabled = false;
+      btnRefresh.innerHTML = `<i class="fa-solid fa-rotate"></i> Fetch Database`;
+      document.getElementById("last-updated-time").textContent = `Last Synced: ${new Date().toLocaleTimeString()}`;
+    }
+
+    // Render entries to table matching JEE structure
+    function renderSubmissions() {
+      const tbody = document.getElementById("table-body");
+      const emptyState = document.getElementById("table-empty-state");
+      tbody.innerHTML = "";
+
+      const filterVal = batchFilter.value; // e.g. "class10" or "all"
+      
+      // Filter list
+      const filtered = allSubmissions.filter(item => {
+        if (filterVal === "all") return true;
+        // Normalize class names, e.g. "Class 10" matches "class10"
+        const normalizedItemClass = item.class.toLowerCase().replace(/\s+/g, "");
+        return normalizedItemClass === filterVal;
+      });
+
+      // Update counters
+      document.getElementById("stat-total-subs").textContent = filtered.length;
+      
+      let sumScore = 0;
+      let sumAccuracy = 0;
+      let scoreCount = 0;
+      let accuracyCount = 0;
+
+      filtered.forEach(item => {
+        // Calculate numeric average from scores like "48 / 60"
+        const parts = item.score.split("/");
+        if (parts.length === 2) {
+          const scored = parseFloat(parts[0]);
+          sumScore += scored;
+          scoreCount++;
+        }
+        
+        const accFloat = parseFloat(item.accuracy.replace("%", ""));
+        if (!isNaN(accFloat)) {
+          sumAccuracy += accFloat;
+          accuracyCount++;
+        }
+      });
+
+      const avgScore = scoreCount > 0 ? (sumScore / scoreCount).toFixed(1) : "0.0";
+      const avgAcc = accuracyCount > 0 ? Math.round(sumAccuracy / accuracyCount) : 0;
+
+      document.getElementById("stat-avg-score").textContent = avgScore;
+      document.getElementById("stat-avg-accuracy").textContent = `${avgAcc}%`;
+
+      if (filtered.length === 0) {
+        emptyState.style.display = "flex";
+        document.getElementById("empty-state-text").textContent = filterVal === "all" 
+          ? "No student submission entries found." 
+          : `No submission entries found for Grade ${filterVal.substring(5)}.`;
+        return;
+      }
+      
+      emptyState.style.display = "none";
+
+      filtered.forEach((item, index) => {
+        const tr = document.createElement("tr");
+
+        // Timestamp
+        const tdTime = document.createElement("td");
+        tdTime.style.fontFamily = "monospace";
+        tdTime.textContent = new Date(item.timestamp).toLocaleString();
+        tr.appendChild(tdTime);
+
+        // Name
+        const tdName = document.createElement("td");
+        tdName.style.fontWeight = "600";
+        tdName.textContent = item.studentName;
+        tr.appendChild(tdName);
+
+        // Class
+        const tdClass = document.createElement("td");
+        const classSpan = document.createElement("span");
+        classSpan.className = "badge badge-class";
+        classSpan.textContent = item.class;
+        tdClass.appendChild(classSpan);
+        tr.appendChild(tdClass);
+
+        // Subject
+        const tdSub = document.createElement("td");
+        tdSub.textContent = item.subject;
+        tr.appendChild(tdSub);
+
+        // Score
+        const tdScore = document.createElement("td");
+        tdScore.style.fontWeight = "700";
+        tdScore.style.color = "var(--accent)";
+        tdScore.textContent = item.score;
+        tr.appendChild(tdScore);
+
+        // Accuracy
+        const tdAcc = document.createElement("td");
+        const accSpan = document.createElement("span");
+        accSpan.className = "badge badge-accuracy";
+        accSpan.textContent = item.accuracy;
+        tdAcc.appendChild(accSpan);
+        tr.appendChild(tdAcc);
+
+        // Source
+        const tdSrc = document.createElement("td");
+        const srcSpan = document.createElement("span");
+        srcSpan.className = "badge badge-source";
+        if (item.source === "Google Sheet") {
+          srcSpan.classList.add("sheets");
+        }
+        srcSpan.textContent = item.source;
+        tdSrc.appendChild(srcSpan);
+        tr.appendChild(tdSrc);
+
+        // Actions
+        const tdActions = document.createElement("td");
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "action-group";
+
+        const btnPacing = document.createElement("button");
+        btnPacing.className = "btn btn-xs";
+        btnPacing.innerHTML = `<i class="fa-solid fa-chart-simple"></i> View Pacing`;
+        btnPacing.addEventListener("click", () => {
+          showPacingModal(item);
+        });
+
+        const btnPdf = document.createElement("button");
+        btnPdf.className = "btn btn-primary btn-xs";
+        btnPdf.innerHTML = `<i class="fa-solid fa-file-pdf"></i> PDF`;
+        btnPdf.addEventListener("click", () => {
+          generateParentPDF(item);
+        });
+
+        actionsDiv.appendChild(btnPacing);
+        actionsDiv.appendChild(btnPdf);
+        tdActions.appendChild(actionsDiv);
+        tr.appendChild(tdActions);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Modal view showing pacing breakdowns
+    function showPacingModal(submission) {
+      const title = document.getElementById("pacing-modal-title");
+      const body = document.getElementById("pacing-modal-body");
+
+      title.innerHTML = `<i class="fa-solid fa-user-clock"></i> Pacing Breakdown: <strong>${submission.studentName}</strong> (${submission.class})`;
+      body.innerHTML = "";
+
+      if (!submission.detailedResults || submission.detailedResults.length === 0) {
+        body.innerHTML = `<div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+          No detailed question data was captured for this test session.
+        </div>`;
+        pacingModal.classList.add("active");
+        return;
+      }
+
+      const container = document.createElement("div");
+      container.className = "pacing-timeline";
+
+      // Find max time to scale bar graphs
+      let maxTime = 1;
+      submission.detailedResults.forEach(res => {
+        if (res.timeSpent > maxTime) maxTime = res.timeSpent;
+      });
+
+      submission.detailedResults.forEach(res => {
+        const item = document.createElement("div");
+        item.className = "pacing-item";
+
+        const meta = document.createElement("div");
+        meta.className = "pacing-meta";
+
+        const qLabel = document.createElement("span");
+        qLabel.style.fontWeight = "600";
+        qLabel.textContent = `Question ${res.qNum}`;
+
+        const pacingVal = document.createElement("span");
+        pacingVal.innerHTML = `<i class="fa-regular fa-clock"></i> Time Spent: <strong>${res.timeSpent}s</strong>`;
+
+        meta.appendChild(qLabel);
+        meta.appendChild(pacingVal);
+
+        // Progress bar representing pacing scale
+        const barContainer = document.createElement("div");
+        barContainer.className = "progress-bar-container";
+
+        const bar = document.createElement("div");
+        bar.className = "progress-bar";
+        if (res.isCorrect === true) {
+          bar.classList.add("correct");
+        } else if (res.isCorrect === false) {
+          bar.classList.add("wrong");
+        } else {
+          bar.classList.add("unanswered");
+        }
+        
+        // Scale width: min 5% for visibility, max 100%
+        const pctWidth = Math.max(5, (res.timeSpent / maxTime) * 100);
+        bar.style.width = `${pctWidth}%`;
+        barContainer.appendChild(bar);
+
+        // Question text description
+        const qText = document.createElement("div");
+        qText.className = "pacing-item-qtext";
+        qText.textContent = res.questionText;
+
+        // Chosen option row
+        const optionsRow = document.createElement("div");
+        optionsRow.className = "pacing-options-row";
+
+        const chosenSpan = document.createElement("span");
+        chosenSpan.innerHTML = `Chosen Option: <strong style="color: #fff;">${res.selected}</strong>`;
+
+        const correctSpan = document.createElement("span");
+        correctSpan.innerHTML = `Correct Option: <strong style="color: var(--color-answered);">${res.correct}</strong>`;
+
+        const scoreDelta = document.createElement("span");
+        if (res.isCorrect === true) {
+          scoreDelta.innerHTML = `Score: <strong style="color: var(--color-answered);">+4 Marks</strong>`;
+        } else if (res.isCorrect === false) {
+          scoreDelta.innerHTML = `Score: <strong style="color: var(--color-unanswered);">-1 Mark</strong>`;
+        } else {
+          scoreDelta.innerHTML = `Score: <strong style="color: var(--text-muted);">0 Marks</strong>`;
+        }
+
+        optionsRow.appendChild(chosenSpan);
+        optionsRow.appendChild(correctSpan);
+        optionsRow.appendChild(scoreDelta);
+
+        item.appendChild(meta);
+        item.appendChild(barContainer);
+        item.appendChild(qText);
+        item.appendChild(optionsRow);
+
+        container.appendChild(item);
+      });
+
+      body.appendChild(container);
+      pacingModal.classList.add("active");
+    }
+
+    // PDF Generator designed beautifully for parents
+    function generateParentPDF(submission) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Premium Styling Colors
+      const primaryIndigo = [99, 102, 241];
+      const darkColor = [30, 41, 59];
+      const lightGray = [248, 250, 252];
+      
+      // Page setup - Margins & Title
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(primaryIndigo[0], primaryIndigo[1], primaryIndigo[2]);
+      doc.text("CBT ACADEMY - REPORT CARD", 14, 22);
+
+      doc.setFontSize(9);
+      doc.setFont("Helvetica", "normal");
+      doc.setTextColor(110);
+      doc.text("Secure Online Computer-Based Test Analytics", 14, 28);
+      doc.text("Date Generated: " + new Date().toLocaleString(), 144, 28);
+
+      // Top separator line
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.5);
+      doc.line(14, 32, 196, 32);
+
+      // Parent Invitation Message Box
+      doc.setFillColor(243, 244, 246);
+      doc.roundedRect(14, 38, 182, 18, 2, 2, "F");
+      
+      doc.setFontSize(9);
+      doc.setFont("Helvetica", "oblique");
+      doc.setTextColor(80);
+      doc.text("Dear Parent,", 18, 44);
+      doc.text("Below is the comprehensive performance tracking and question pacing report for your child's mock session.", 18, 50);
+
+      // Left Column: Candidate Metadata
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+      doc.text("Candidate Details", 14, 66);
+
+      doc.setFont("Helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(70);
+      doc.text("Student Name: ", 14, 73);
+      doc.setFont("Helvetica", "bold");
+      doc.text(submission.studentName, 45, 73);
+
+      doc.setFont("Helvetica", "normal");
+      doc.text("Class / Batch: ", 14, 79);
+      doc.setFont("Helvetica", "bold");
+      doc.text(submission.class, 45, 79);
+
+      doc.setFont("Helvetica", "normal");
+      doc.text("Test Subject: ", 14, 85);
+      doc.setFont("Helvetica", "bold");
+      doc.text(submission.subject, 45, 85);
+
+      doc.setFont("Helvetica", "normal");
+      doc.text("Attempt Date: ", 14, 91);
+      doc.setFont("Helvetica", "bold");
+      doc.text(new Date(submission.timestamp).toLocaleString(), 45, 91);
+
+      // Right Column: Summary Performance Cards
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("Overall Results Summary", 114, 66);
+
+      // Score box card
+      doc.setFillColor(240, 244, 255);
+      doc.setDrawColor(219, 234, 254);
+      doc.roundedRect(114, 71, 38, 22, 2, 2, "FD");
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.setFont("Helvetica", "normal");
+      doc.text("TOTAL SCORE", 118, 76);
+      doc.setFontSize(12);
+      doc.setFont("Helvetica", "bold");
+      doc.setTextColor(primaryIndigo[0], primaryIndigo[1], primaryIndigo[2]);
+      doc.text(submission.score, 118, 87);
+
+      // Accuracy box card
+      doc.setFillColor(254, 243, 199);
+      doc.setDrawColor(253, 230, 138);
+      doc.roundedRect(158, 71, 38, 22, 2, 2, "FD");
+      doc.setFontSize(8);
+      doc.setTextColor(120);
+      doc.setFont("Helvetica", "normal");
+      doc.text("ACCURACY", 162, 76);
+      doc.setFontSize(12);
+      doc.setFont("Helvetica", "bold");
+      doc.setTextColor(217, 119, 6);
+      doc.text(submission.accuracy, 162, 87);
+
+      // Section separator line
+      doc.setDrawColor(226, 232, 240);
+      doc.line(14, 100, 196, 100);
+
+      // Detailed question table title
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(darkColor[0], darkColor[1], darkColor[2]);
+      doc.text("Question-by-Question Pacing & Accuracy Analysis", 14, 108);
+
+      // Compile table data rows
+      const tableHeaders = [["Q#", "Question Text (Conceptual Focus)", "Selected", "Correct", "Pacing", "Result"]];
+      const tableBody = [];
+
+      let totalSeconds = 0;
+      submission.detailedResults.forEach(res => {
+        totalSeconds += res.timeSpent;
+        
+        let resultLabel = "Unanswered (0)";
+        if (res.isCorrect === true) resultLabel = "Correct (+4)";
+        else if (res.isCorrect === false) resultLabel = "Wrong (-1)";
+
+        // Truncate long questions for cell compatibility
+        const shortText = res.questionText.length > 70 
+          ? res.questionText.substring(0, 70) + "..." 
+          : res.questionText;
+
+        tableBody.push([
+          res.qNum,
+          shortText,
+          res.selected,
+          res.correct,
+          `${res.timeSpent}s`,
+          resultLabel
+        ]);
+      });
+
+      // Render table using autoTable CDN plugin
+      doc.autoTable({
+        startY: 114,
+        head: tableHeaders,
+        body: tableBody,
+        theme: "striped",
+        headStyles: {
+          fillColor: primaryIndigo,
+          textColor: [255, 255, 255],
+          fontSize: 9,
+          fontStyle: "bold"
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: [51, 65, 85]
+        },
+        columnStyles: {
+          0: { cellWidth: 10, halign: "center" },
+          1: { cellWidth: 80 },
+          2: { cellWidth: 18, halign: "center" },
+          3: { cellWidth: 18, halign: "center" },
+          4: { cellWidth: 20, halign: "center" },
+          5: { cellWidth: 36 }
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
+        },
+        didDrawPage: (data) => {
+          // Add custom page numbers or header details on overflow
+        }
+      });
+
+      const finalY = doc.lastAutoTable.finalY + 12;
+
+      // Draw bottom statistics block
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(14, finalY, 182, 16, 2, 2, "F");
+      
+      doc.setFont("Helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      
+      const minsTotal = Math.floor(totalSeconds / 60);
+      const secsTotal = totalSeconds % 60;
+      
+      doc.text(`Total Time Spent on Test: `, 18, finalY + 10);
+      doc.setFont("Helvetica", "bold");
+      doc.setTextColor(51);
+      doc.text(`${minsTotal} mins ${secsTotal} secs`, 62, finalY + 10);
+
+      doc.setFont("Helvetica", "normal");
+      doc.setTextColor(100);
+      doc.text(`Average Time Per Question: `, 114, finalY + 10);
+      doc.setFont("Helvetica", "bold");
+      doc.setTextColor(51);
+      const avgQSeconds = submission.detailedResults.length > 0 ? (totalSeconds / submission.detailedResults.length).toFixed(1) : 0;
+      doc.text(`${avgQSeconds} seconds`, 160, finalY + 10);
+
+      // Legal disclaimer footnote
+      doc.setFont("Helvetica", "italic");
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text("Note: This performance record is protected. Unauthorized distribution or copying is prohibited.", 14, finalY + 25);
+
+      // Download PDF trigger
+      doc.save(`CBT_Report_${submission.studentName.replace(/\s+/g, "_")}.pdf`);
+    }
+  </script>
+</body>
+</html>
