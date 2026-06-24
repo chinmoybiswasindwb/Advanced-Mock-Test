@@ -882,28 +882,8 @@
         <input type="text" id="student-name" class="form-input" placeholder="Enter your full name" autocomplete="off">
       </div>
       
-      <div class="form-group">
-        <label for="student-class">Class/Batch</label>
-        <select id="student-class" class="form-input">
-          <option value="" disabled selected>Select your Class</option>
-          <option value="class7">Class 7</option>
-          <option value="class8">Class 8</option>
-          <option value="class9">Class 9</option>
-          <option value="class10">Class 10 (CBSE)</option>
-          <option value="class11">Class 11</option>
-          <option value="class12">Class 12 (CBSE)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="student-subject">Subject / Chapter Test</label>
-        <select id="student-subject" class="form-input" disabled>
-          <option value="" disabled selected>Select Class First</option>
-        </select>
-      </div>
-      
       <button type="button" class="btn btn-primary btn-block" id="login-btn" style="margin-top: 1rem;">
-        <i class="fa-solid fa-play"></i> Start Mock Test Session
+        <i class="fa-solid fa-play"></i> Start Exam
       </button>
     </div>
   </div>
@@ -1409,8 +1389,6 @@
     const loginOverlay = document.getElementById("login-overlay");
     const loginBtn = document.getElementById("login-btn");
     const studentNameInput = document.getElementById("student-name");
-    const studentClassSelect = document.getElementById("student-class");
-    const studentSubjectSelect = document.getElementById("student-subject");
 
     const appWrapper = document.getElementById("student-portal-app");
     const reportWrapper = document.getElementById("report-portal-app");
@@ -1439,35 +1417,7 @@
     const btnConfirmSubmit = document.getElementById("btn-confirm-submit");
     const sendingOverlay = document.getElementById("sending-overlay");
 
-    // Dynamic Select Filtering
-    studentClassSelect.addEventListener("change", () => {
-      const selectedClass = studentClassSelect.value;
-      studentSubjectSelect.innerHTML = "";
-      studentSubjectSelect.disabled = !selectedClass;
-
-      if (selectedClass && testBanks[selectedClass]) {
-        const defaultOpt = document.createElement("option");
-        defaultOpt.value = "";
-        defaultOpt.disabled = true;
-        defaultOpt.selected = true;
-        defaultOpt.textContent = "Select Subject/Test";
-        studentSubjectSelect.appendChild(defaultOpt);
-
-        testBanks[selectedClass].subjects.forEach(sub => {
-          const opt = document.createElement("option");
-          opt.value = sub.id;
-          opt.textContent = sub.name;
-          studentSubjectSelect.appendChild(opt);
-        });
-      } else {
-        const opt = document.createElement("option");
-        opt.value = "";
-        opt.disabled = true;
-        opt.selected = true;
-        opt.textContent = "Select Class First";
-        studentSubjectSelect.appendChild(opt);
-      }
-    });
+    // No class/subject selects needed (Magnetism Conceptual Class 10 is hardcoded)
 
     // Proctor Window Switch Listener
     document.addEventListener("visibilitychange", () => {
@@ -1480,19 +1430,11 @@
     // Handle Login Button Click
     loginBtn.addEventListener("click", () => {
       const name = studentNameInput.value.trim();
-      const classVal = studentClassSelect.value;
-      const subjectVal = studentSubjectSelect.value;
+      const classVal = "class10";
+      const subjectVal = "c10_magnetism";
 
       if (!name) {
         alert("Please enter your name.");
-        return;
-      }
-      if (!classVal) {
-        alert("Please select your class.");
-        return;
-      }
-      if (!subjectVal) {
-        alert("Please select your subject/test.");
         return;
       }
 
@@ -1510,8 +1452,8 @@
         name: name,
         classId: classVal,
         subjectId: subjectVal,
-        classDisplay: studentClassSelect.options[studentClassSelect.selectedIndex].text,
-        subjectDisplay: test.name
+        classDisplay: "Class 10",
+        subjectDisplay: "Magnetism (Conceptual)"
       };
 
       // Set Up States
