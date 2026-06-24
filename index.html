@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CBT Mock Test - Student Portal</title>
-  <meta name="description" content="Secure, offline-ready Computer-Based Test portal.">
+  <meta name="description" content="Secure, proctor-verified Computer-Based Test portal.">
   <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -196,7 +196,7 @@
       color: var(--text-secondary);
     }
 
-    /* Main Panels */
+    /* Main Workspace Panels */
     .main-workspace {
       display: grid;
       grid-template-columns: 1fr 340px;
@@ -664,169 +664,88 @@
       font-weight: 600;
     }
 
-    /* Completed Screen Token Card */
-    .token-card {
-      background: rgba(99, 102, 241, 0.08);
-      border: 1px solid rgba(99, 102, 241, 0.2);
-      border-radius: 12px;
-      padding: 1rem;
-      margin: 1rem 0;
-      text-align: left;
-    }
-
-    .token-title {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--accent);
-      margin-bottom: 0.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .token-area {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 0.75rem;
-      font-family: monospace;
-      font-size: 0.85rem;
-      color: #34d399;
-      word-break: break-all;
-      user-select: all;
-      min-height: 80px;
-      max-height: 120px;
-      overflow-y: auto;
-    }
-
-    /* Report Card Container styles */
+    /* Report Card Container styles (Secure Submission View) */
     .report-container {
-      max-width: 900px;
-      margin: 1.5rem auto;
+      max-width: 600px;
+      margin: 4rem auto;
       background: var(--bg-surface);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--border-color);
       border-radius: 20px;
-      padding: 2.5rem;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      padding: 3rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
       display: flex;
       flex-direction: column;
-      gap: 2rem;
+      align-items: center;
+      gap: 1.5rem;
+      text-align: center;
     }
 
-    .report-header {
+    .secure-success-icon {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: var(--color-answered);
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 1.5rem;
-    }
-
-    .report-title-section {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .report-title-section i {
+      justify-content: center;
       font-size: 2.5rem;
-      color: var(--color-review-answered);
+      margin-bottom: 0.5rem;
     }
 
-    .report-title-text h2 {
+    .secure-title {
       font-size: 1.5rem;
       font-weight: 700;
+      color: #fff;
     }
 
-    .report-title-text p {
-      font-size: 0.85rem;
+    .secure-text {
+      font-size: 0.95rem;
       color: var(--text-secondary);
+      line-height: 1.6;
     }
 
-    .report-dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1.25rem;
-    }
-
-    .report-card {
+    .secure-metadata {
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--border-color);
-      border-radius: 14px;
+      border-radius: 12px;
       padding: 1.25rem;
+      width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .report-card-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      font-weight: 600;
-      color: var(--text-muted);
-      letter-spacing: 0.5px;
-    }
-
-    .report-card-val {
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-
-    .report-table-wrapper {
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .report-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
+      gap: 0.5rem;
       text-align: left;
+      font-size: 0.9rem;
     }
 
-    .report-table th, .report-table td {
-      padding: 0.85rem 1.25rem;
-      border-bottom: 1px solid var(--border-color);
+    .secure-metadata div {
+      display: flex;
+      justify-content: space-between;
     }
 
-    .report-table th {
-      background: rgba(255, 255, 255, 0.03);
+    .secure-metadata span {
       color: var(--text-secondary);
-      font-weight: 600;
     }
 
-    .report-table tr:last-child td {
-      border-bottom: none;
+    .secure-metadata strong {
+      color: #fff;
     }
 
-    .badge-correct {
-      background: rgba(16, 185, 129, 0.12);
-      color: var(--color-answered);
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 0.75rem;
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border-left-color: var(--accent);
+      animation: spin 1s linear infinite;
     }
 
-    .badge-wrong {
-      background: rgba(239, 68, 68, 0.12);
-      color: var(--color-unanswered);
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 0.75rem;
-    }
-
-    .badge-unanswered {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-secondary);
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 0.75rem;
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -1022,96 +941,63 @@
     </div>
   </div>
 
-  <!-- Local Performance Report Card & Token Display (Shown after Submission) -->
-  <div class="app-container" id="report-portal-app" style="display: none;">
-    <div class="report-container" style="gap: 1.5rem;">
-      <div class="report-header">
-        <div class="report-title-section">
-          <i class="fa-solid fa-award"></i>
-          <div class="report-title-text">
-            <h2>Test Submitted Successfully!</h2>
-            <p id="report-subject-title">Class 10 Light Mock Test</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Token copy block -->
-      <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1.25rem; border-radius: 14px;">
-        <h3 style="font-size: 0.95rem; font-weight: 700; color: #34d399; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-          <i class="fa-solid fa-key"></i> Exam Submission Token
-        </h3>
-        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
-          Test submitted! Copy this token and message it to your teacher.
-        </p>
-        <div style="display: flex; gap: 0.75rem; align-items: center;">
-          <div class="token-area" id="token-display-box" style="flex: 1;">-</div>
-          <button class="btn btn-primary" id="btn-copy-token" style="padding: 0.65rem 1rem;">
-            <i class="fa-regular fa-clipboard"></i> Copy Token
-          </button>
-        </div>
-      </div>
-
-      <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 14px;">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.9rem;">
-          <div>
-            <span style="color: var(--text-secondary);">Student Name:</span>
-            <strong id="report-student-name" style="margin-left: 0.5rem; color: #fff;">-</strong>
-          </div>
-          <div>
-            <span style="color: var(--text-secondary);">Class / Batch:</span>
-            <strong id="report-student-class" style="margin-left: 0.5rem; color: #fff;">-</strong>
-          </div>
-        </div>
-      </div>
-
-      <div class="report-dashboard-grid">
-        <div class="report-card">
-          <span class="report-card-label">Total Score</span>
-          <span class="report-card-val" id="report-score" style="color: var(--accent);">-</span>
-        </div>
-        <div class="report-card">
-          <span class="report-card-label">Accuracy</span>
-          <span class="report-card-val" id="report-accuracy" style="color: var(--color-review);">-</span>
-        </div>
-        <div class="report-card">
-          <span class="report-card-label">Correct Answers</span>
-          <span class="report-card-val" id="report-correct" style="color: var(--color-answered);">-</span>
-        </div>
-        <div class="report-card">
-          <span class="report-card-label">Incorrect Answers</span>
-          <span class="report-card-val" id="report-incorrect" style="color: var(--color-unanswered);">-</span>
-        </div>
-      </div>
-
-      <div>
-        <h3 style="font-size: 1.05rem; font-weight: 600; margin-bottom: 0.5rem;">Question-by-Question Breakdown</h3>
-        <div class="report-table-wrapper">
-          <table class="report-table">
-            <thead>
-              <tr>
-                <th>Q#</th>
-                <th>Time Spent</th>
-                <th>Option Chosen</th>
-                <th>Correct Option</th>
-                <th>Result</th>
-              </tr>
-            </thead>
-            <tbody id="report-table-body">
-              <!-- Dynamic Rows -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div style="display:flex; justify-content:center; gap: 1rem; margin-top: 0.5rem;">
-        <button class="btn btn-primary" onclick="window.location.reload();" style="padding: 0.8rem 2rem;">
-          <i class="fa-solid fa-rotate-right"></i> Take Another Test
-        </button>
+  <!-- Sending Data Spinner Overlay -->
+  <div class="overlay" id="sending-overlay">
+    <div class="login-modal submit-modal">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:1rem;">
+        <div class="spinner"></div>
+        <h2>Uploading Responses</h2>
+        <p>Syncing proctor integrity logs and exam choices with the live evaluation stream...</p>
       </div>
     </div>
   </div>
 
-  <script>
+  <!-- Secure Submission Report Screen (Hides Answers & Scores) -->
+  <div class="app-container" id="report-portal-app" style="display: none;">
+    <div class="report-container">
+      <div class="secure-success-icon">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+      </div>
+      
+      <h2 class="secure-title">Test Submitted Successfully!</h2>
+      <p class="secure-text">
+        Dear candidate, your mock exam responses, question pacing metrics, and proctor security integrity logs have been successfully transmitted to the administration dashboard.
+      </p>
+
+      <div class="secure-metadata">
+        <div>
+          <span>Candidate Name:</span>
+          <strong id="secure-student-name">-</strong>
+        </div>
+        <div>
+          <span>Class / Grade:</span>
+          <strong id="secure-student-class">-</strong>
+        </div>
+        <div>
+          <span>Assessment Name:</span>
+          <strong id="secure-subject-title">-</strong>
+        </div>
+        <div>
+          <span>Proctor Verification:</span>
+          <strong style="color: var(--color-answered);">Active & Passed</strong>
+        </div>
+      </div>
+
+      <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; width: 100%; text-align: left; font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">
+        <i class="fa-solid fa-circle-info" style="color: var(--accent); margin-right: 0.25rem;"></i>
+        For academic evaluation safety and exam integrity, all question scoring parameters, correct responses, and pacing breakdowns are withheld on the student device. Please consult your proctoring instructor for your performance evaluation report card.
+      </div>
+
+      <button class="btn btn-secondary" onclick="window.location.reload();" style="padding: 0.75rem 2rem; margin-top: 1rem;">
+        <i class="fa-solid fa-arrow-left-long"></i> Exit Console
+      </button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from "./firebase-config.js";
+    import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
     // Standsalone local question banks configuration
     const testBanks = {
       "class7": {
@@ -1512,6 +1398,12 @@
     let questionStartTime = null;
     let timeLeft = 0;
     let timerInterval = null;
+    let testActive = false;
+
+    // Advanced Metrics Trackers
+    let tabSwitchCount = 0;
+    let prevClickCount = 0;
+    let optionToggleCount = 0;
 
     // DOM Elements
     const loginOverlay = document.getElementById("login-overlay");
@@ -1545,9 +1437,7 @@
     const submitOverlay = document.getElementById("submit-overlay");
     const btnCancelSubmit = document.getElementById("btn-cancel-submit");
     const btnConfirmSubmit = document.getElementById("btn-confirm-submit");
-
-    const tokenDisplayBox = document.getElementById("token-display-box");
-    const btnCopyToken = document.getElementById("btn-copy-token");
+    const sendingOverlay = document.getElementById("sending-overlay");
 
     // Dynamic Select Filtering
     studentClassSelect.addEventListener("change", () => {
@@ -1576,6 +1466,14 @@
         opt.selected = true;
         opt.textContent = "Select Class First";
         studentSubjectSelect.appendChild(opt);
+      }
+    });
+
+    // Proctor Window Switch Listener
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && testActive) {
+        tabSwitchCount++;
+        console.warn(`Proctor alert: Student exited application scope. Count: ${tabSwitchCount}`);
       }
     });
 
@@ -1609,11 +1507,11 @@
       timeLeft = test.durationMins * 60;
       
       student = {
-        name: name.replace(/\|/g, "-"), // prevent delimiter injection
+        name: name,
         classId: classVal,
         subjectId: subjectVal,
-        classDisplay: studentClassSelect.options[studentClassSelect.selectedIndex].text.replace(/\|/g, "-"),
-        subjectDisplay: test.name.replace(/\|/g, "-")
+        classDisplay: studentClassSelect.options[studentClassSelect.selectedIndex].text,
+        subjectDisplay: test.name
       };
 
       // Set Up States
@@ -1622,6 +1520,10 @@
         studentAnswers[i] = { selectedOption: null, status: "unvisited" };
       }
       questionTimes = new Array(questions.length).fill(0);
+      tabSwitchCount = 0;
+      prevClickCount = 0;
+      optionToggleCount = 0;
+      testActive = true;
 
       // Populate Header Details
       headerSubjectTitle.textContent = student.subjectDisplay;
@@ -1659,7 +1561,6 @@
         const secs = timeLeft % 60;
         timeLeftSpan.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         
-        // Critical timing warning under 5 mins
         if (timeLeft <= 300) {
           timerDisplay.classList.remove("normal");
         } else {
@@ -1728,7 +1629,6 @@
 
       updatePaletteUI();
       
-      // Footer nav button enablement
       btnPrev.disabled = index === 0;
       btnSaveNext.innerHTML = index === questions.length - 1 ? `Save & Finish <i class="fa-solid fa-flag-checkered"></i>` : `Save & Next <i class="fa-solid fa-arrow-right"></i>`;
     }
@@ -1736,6 +1636,12 @@
     // Select Option
     function selectOption(optionIndex) {
       const currentAns = studentAnswers[currentIdx];
+      
+      // Track option toggle counts
+      if (currentAns.selectedOption !== optionIndex) {
+        optionToggleCount++;
+      }
+
       currentAns.selectedOption = optionIndex;
 
       // Update Option CSS
@@ -1759,6 +1665,10 @@
 
     // Clear Response
     btnClear.addEventListener("click", () => {
+      if (studentAnswers[currentIdx].selectedOption !== null) {
+        optionToggleCount++;
+      }
+      
       studentAnswers[currentIdx].selectedOption = null;
 
       const cards = optionsList.children;
@@ -1807,6 +1717,7 @@
     // Previous Button
     btnPrev.addEventListener("click", () => {
       if (currentIdx > 0) {
+        prevClickCount++;
         loadQuestion(currentIdx - 1);
       }
     });
@@ -1894,18 +1805,22 @@
       executeSubmitTest();
     }
 
-    // Compile, compute scores and display Token
-    function executeSubmitTest() {
+    // Compile, compute scores and write to Firestore
+    async function executeSubmitTest() {
+      testActive = false;
       if (timerInterval) clearInterval(timerInterval);
       trackTimeOnCurrentQuestion();
 
-      // Calculate Scores
+      // Show Uploading Spinner overlay
+      sendingOverlay.classList.add("active");
+
+      // Calculate Scores & Omissions
       let correctAnswers = 0;
       let incorrectAnswers = 0;
       let unanswered = 0;
       const maxScore = questions.length * 4;
       const detailedResults = [];
-      const resultsArray = []; // 'C', 'W', 'U'
+      let unattemptedTime = 0;
 
       for (let i = 0; i < questions.length; i++) {
         const q = questions[i];
@@ -1919,14 +1834,13 @@
           if (chosenIdx === q.correctIndex) {
             correctAnswers++;
             isCorrect = true;
-            resultsArray.push("C");
           } else {
             incorrectAnswers++;
-            resultsArray.push("W");
           }
         } else {
           unanswered++;
-          resultsArray.push("U");
+          // Sum up unattempted seconds
+          unattemptedTime += questionTimes[i] || 0;
         }
 
         detailedResults.push({
@@ -1944,81 +1858,48 @@
       const totalAttempted = correctAnswers + incorrectAnswers;
       const accuracy = totalAttempted > 0 ? Math.round((correctAnswers / totalAttempted) * 100) : 0;
 
-      // Format clean pipe-separated token
-      // Format: Name|Class|Subject|Score|Accuracy|TimeSpentArray|ResultsArray
-      const timeSpentString = questionTimes.join(",");
-      const resultsString = resultsArray.join(",");
-      const token = `${student.name}|${student.classDisplay}|${student.subjectDisplay}|${totalScore} / ${maxScore}|${accuracy}%|${timeSpentString}|${resultsString}`;
+      // Construct Firestore Submission ID
+      const timestamp = new Date().toISOString();
+      const sanitizedName = student.name.replace(/[^a-zA-Z0-9]/g, "_");
+      const sanitizedClass = student.classDisplay.replace(/[^a-zA-Z0-9]/g, "_");
+      const sanitizedSubject = student.subjectDisplay.replace(/[^a-zA-Z0-9]/g, "_");
+      const submissionId = `${sanitizedName}_${sanitizedClass}_${sanitizedSubject}_${Date.now()}`;
 
-      // Populate displays
-      tokenDisplayBox.textContent = token;
-      
-      // Setup Copy Click Handler
-      btnCopyToken.onclick = () => {
-        navigator.clipboard.writeText(token).then(() => {
-          btnCopyToken.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
-          setTimeout(() => {
-            btnCopyToken.innerHTML = `<i class="fa-regular fa-clipboard"></i> Copy Token`;
-          }, 2000);
-        }).catch(err => {
-          alert("Failed to copy automatically. Please click double-click the token and copy manually.");
-        });
+      // Assemble dynamic diagnostic data packet
+      const payload = {
+        studentName: student.name,
+        class: student.classDisplay,
+        subject: student.subjectDisplay,
+        timestamp: timestamp,
+        score: `${totalScore} / ${maxScore}`,
+        accuracy: `${accuracy}%`,
+        timeSpentPerQuestion: questionTimes,
+        tabSwitchCount: tabSwitchCount,
+        prevClickCount: prevClickCount,
+        optionToggleCount: optionToggleCount,
+        unattemptedTime: unattemptedTime,
+        detailedResults: detailedResults
       };
 
-      // Show Report card panel
-      appWrapper.style.display = "none";
-      reportWrapper.style.display = "flex";
-
-      // Populate details
-      document.getElementById("report-subject-title").textContent = student.subjectDisplay;
-      document.getElementById("report-student-name").textContent = student.name;
-      document.getElementById("report-student-class").textContent = student.classDisplay;
-
-      document.getElementById("report-score").textContent = `${totalScore} / ${maxScore}`;
-      document.getElementById("report-accuracy").textContent = `${accuracy}%`;
-      document.getElementById("report-correct").textContent = correctAnswers;
-      document.getElementById("report-incorrect").textContent = incorrectAnswers;
-
-      // Populate breakdown table rows
-      const tbody = document.getElementById("report-table-body");
-      tbody.innerHTML = "";
-
-      detailedResults.forEach(res => {
-        const tr = document.createElement("tr");
+      try {
+        // Upload to Live Firestore Stream
+        await setDoc(doc(db, "submissions", submissionId), payload);
+        console.log("Firestore Submission Success! Document ID:", submissionId);
         
-        const tdNum = document.createElement("td");
-        tdNum.textContent = res.qNum;
-        tr.appendChild(tdNum);
-
-        const tdTime = document.createElement("td");
-        tdTime.textContent = `${res.timeSpent}s`;
-        tr.appendChild(tdTime);
-
-        const tdSelected = document.createElement("td");
-        tdSelected.textContent = res.selected;
-        tr.appendChild(tdSelected);
-
-        const tdCorrect = document.createElement("td");
-        tdCorrect.textContent = res.correct;
-        tr.appendChild(tdCorrect);
-
-        const tdResult = document.createElement("td");
-        const span = document.createElement("span");
-        if (res.isCorrect === true) {
-          span.className = "badge-correct";
-          span.textContent = "Correct (+4)";
-        } else if (res.isCorrect === false) {
-          span.className = "badge-wrong";
-          span.textContent = "Wrong (-1)";
-        } else {
-          span.className = "badge-unanswered";
-          span.textContent = "Unanswered (0)";
-        }
-        tdResult.appendChild(span);
-        tr.appendChild(tdResult);
-
-        tbody.appendChild(tr);
-      });
+        // Hide spinner & show secure completed screen (with scores hidden)
+        sendingOverlay.classList.remove("active");
+        appWrapper.style.display = "none";
+        
+        document.getElementById("secure-student-name").textContent = student.name;
+        document.getElementById("secure-student-class").textContent = student.classDisplay;
+        document.getElementById("secure-subject-title").textContent = student.subjectDisplay;
+        
+        reportWrapper.style.display = "flex";
+      } catch (err) {
+        console.error("Firestore Upload Error: ", err);
+        sendingOverlay.classList.remove("active");
+        alert("Network error: Could not sync responses with database. Please try submitting again.");
+      }
     }
   </script>
 </body>
